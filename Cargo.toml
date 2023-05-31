@@ -1,6 +1,8 @@
 [package]
 name = "pitusya"
+authors = ["Jujumba"]
+repository = "https://github.com/Jujumba/pitusya"
 description = "The Pitusya programming language"
-version = "0.0.0"
+version = "0.0.1"
 edition = "2021"
 license = "MIT"
