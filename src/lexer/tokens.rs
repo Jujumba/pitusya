@@ -1,12 +1,3 @@
-pub const OPERATORS: [char; 6] = [
-    '=',
-    '+',
-    '/',
-    '*',
-    '-',
-    ';',
-];
-
 #[derive(Debug)]
 pub enum Token {
     Operator(OperatorType), 
@@ -16,38 +7,49 @@ pub enum Token {
     Undefined(String), // For unrecognised characters, such as $, ^ or @
     EOF,
 }
-
 #[derive(Debug)]
 pub enum OperatorType {
-    Asign,
-    Comp,
-    Add,
-    Div,
-    Mul,
-    Sub,
-    Semicol,
+    Unary(UnaryOperator),
+    Binary(BinaryOperator),
+    Assignment(AssignmentOperator)
+    // todo: special type for semicol?
 }
-
+#[derive(Debug)]
+pub enum UnaryOperator {
+    BWNot, 
+    UNot, 
+}
+#[derive(Debug)]
+pub enum AssignmentOperator {
+    Equals,
+    PlusEquals,
+    MinusEquals,
+    MultEquals,
+    DivEquals,
+    BWLeftShiftEquals,
+    BWRightShiftEquals,
+    OrEquals,
+    XorEquals,
+    ModuloEquals,
+}
+#[derive(Debug)]
+pub enum BinaryOperator {
+    Addition,
+    Subtraction,
+    Multiplication,
+    Division,
+    Bigger,
+    BiggerOrEq,
+    Less,
+    LessOrEq,
+    Modulo,
+    And,
+    Xor,
+    BWLeftShift,
+    BWRightShift,
+    Comparision,
+}
 impl Token { // todo: use From<&str> trait
-    pub fn to_operator(value: String) -> Self {
-        if value == "=" {
-            Token::Operator(OperatorType::Asign)
-        } else if value == "==" {
-            Token::Operator(OperatorType::Comp)
-        } else if value == "+" {
-            Token::Operator(OperatorType::Add)
-        } else if value == "-" {
-            Token::Operator(OperatorType::Sub)
-        } else if value == "*" {
-            Token::Operator(OperatorType::Mul)
-        } else if value == "/" {
-            Token::Operator(OperatorType::Div)
-        } else if value == ";" {
-            Token::Operator(OperatorType::Semicol)
-        } else {
-            Token::Undefined(String::new())
-        }
-    }
     pub fn to_keyword(value: String) -> Self {
         if value == "let" { // todo
             Token::Keyword(KeywordType::Let)
@@ -60,6 +62,46 @@ impl Token { // todo: use From<&str> trait
         }
     }
 }
+impl OperatorType {
+    pub fn to_operator(op: &str) -> Option<Self> {
+        match op {
+            "=" => Some(Self::Assignment(AssignmentOperator::Equals)),
+            "+=" => Some(Self::Assignment(AssignmentOperator::PlusEquals)),
+            "-=" => Some(Self::Assignment(AssignmentOperator::MinusEquals)),
+            "*=" => Some(Self::Assignment(AssignmentOperator::MultEquals)),
+            "/=" => Some(Self::Assignment(AssignmentOperator::DivEquals)),
+            "<<=" => Some(Self::Assignment(AssignmentOperator::BWLeftShiftEquals)),
+            ">>=" => Some(Self::Assignment(AssignmentOperator::BWRightShiftEquals)),
+            "|=" => Some(Self::Assignment(AssignmentOperator::OrEquals)),
+            "^=" => Some(Self::Assignment(AssignmentOperator::XorEquals)),
+            "%=" => Some(Self::Assignment(AssignmentOperator::ModuloEquals)),
+            "+" => Some(Self::Binary(BinaryOperator::Addition)),
+            "-" => Some(Self::Binary(BinaryOperator::Subtraction)),
+            "*" => Some(Self::Binary(BinaryOperator::Multiplication)),
+            "/" => Some(Self::Binary(BinaryOperator::Division)),
+            ">" => Some(Self::Binary(BinaryOperator::Bigger)),
+            ">=" => Some(Self::Binary(BinaryOperator::BiggerOrEq)),
+            "<" => Some(Self::Binary(BinaryOperator::Less)),
+            "<=" => Some(Self::Binary(BinaryOperator::LessOrEq)),
+            "%" => Some(Self::Binary(BinaryOperator::Modulo)),
+            "&" => Some(Self::Binary(BinaryOperator::And)),
+            "|" => Some(Self::Binary(BinaryOperator::Xor)),
+            "<<" => Some(Self::Binary(BinaryOperator::BWLeftShift)),
+            ">>" => Some(Self::Binary(BinaryOperator::BWRightShift)),
+            "==" => Some(Self::Binary(BinaryOperator::Comparision)),
+            "~" => Some(Self::Unary(UnaryOperator::BWNot)),
+            "!" => Some(Self::Unary(UnaryOperator::UNot)),
+            _ => None,
+        }
+    }
+    pub fn is_operator(op: &str) -> bool {
+        match Self::to_operator(op) {
+            Some(_) => true,
+            None => false
+        }
+    }
+}
+
 
 #[derive(Debug)]
 pub enum KeywordType {

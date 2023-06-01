@@ -2,7 +2,7 @@ use pitusya::{input::InputFile, lexer::next_token};
 use pitusya::lexer::tokens::Token;
 fn main() {
     let mut input = InputFile {
-        content: "1.1 .1".chars().collect(),
+        content: ">>+<=".chars().collect(),
         cursor: 0
     };
     loop {

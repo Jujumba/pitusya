@@ -4,6 +4,8 @@ use crate::input::InputFile;
 
 use tokens::{Token, LiteralType, NumType};
 
+use self::tokens::OperatorType;
+
 pub fn next_token(input: &mut InputFile) -> Token {
     if input.out_of_bounds() {
         return Token::EOF;
@@ -37,13 +39,21 @@ pub fn next_token(input: &mut InputFile) -> Token {
         return Token::to_keyword(str);
     }
 
-    if !tokens::OPERATORS.contains(&input.current_char()) {
+    // todo: ugly
+    let mut op = input.current_char().to_string();
+    while OperatorType::is_operator(&op) {
         input.cursor += 1;
-        return Token::Undefined(String::from(input.content[input.cursor - 1]));
+        if input.out_of_bounds() {
+            break;
+        }
+        op.push(input.current_char())
     }
-    while !input.out_of_bounds() && tokens::OPERATORS.contains(&input.current_char()) {
-        input.cursor += 1;
+    if !input.out_of_bounds() {
+        op.pop();
     }
 
-    Token::to_operator(input.get_substr_to_cursor(start))
+    match OperatorType::to_operator(&op) {
+        Some(op) => Token::Operator(op),
+        None => Token::Undefined(op)
+    }
 }
