@@ -4,7 +4,8 @@ pub enum Token {
     Keyword(KeywordType), 
     Literal(LiteralType),
     Identifier(String), 
-    Undefined(String), // For unrecognised characters, such as $, ^ or @
+    Undefined(String), // For unrecognised characters, such as $ or @
+    Semicol,
     EOF,
 }
 #[derive(Debug)]

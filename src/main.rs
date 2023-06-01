@@ -1,8 +1,9 @@
-use pitusya::{input::InputFile, lexer::next_token};
-use pitusya::lexer::tokens::Token;
+use pitusya::{lexer::Token, lexer::next_token};
+use pitusya::input::InputFile;
+
 fn main() {
     let mut input = InputFile {
-        content: ">>+<=".chars().collect(),
+        content: ">>11<=".chars().collect(),
         cursor: 0
     };
     loop {

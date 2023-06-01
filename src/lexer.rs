@@ -1,8 +1,9 @@
 pub mod tokens;
+pub use tokens::Token;
 
 use crate::input::InputFile;
 
-use tokens::{Token, LiteralType, NumType};
+use tokens::{LiteralType, NumType};
 
 use self::tokens::OperatorType;
 
