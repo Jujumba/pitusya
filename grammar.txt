@@ -1,21 +1,17 @@
-Statements
-----------
-<let_statement> ::= "let" <identifier> "=" <expression> ";"
-
 Operators
 ---------
-<unary_operator> ::= "~" | "!" | "-"
-<assignment_operator> ::= "=" | "+=" | "-=" | "*=" | "/=" | "<<=" | ">>=" | "|=" | "^=" | "&=" | "%="
-<binary_operator> ::= "+" | "-" | "*" | "/" | "%" | "&" | "^" | "|" | "<<" | ">>" | "<=" | ">="
+<unary_operator> ::= ~ | ! | -
+<assignment_operator> ::= = | += | -= | *= | /= | <<= | >>= | |= | ^= | &= | %=
+<binary_operator> ::= < | > |+ | - | * | / | % | & | ^ | | | << | >> | <= | >=
 
 Literals
 --------
-<digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+<digit> ::= 0 | .. | 9
 <number> ::= <digit> <number> | <digit>
-<letter> ::= "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
-<string> ::= <letter> <string> | ""
+<char> ::= a | .. | Z | а | .. | ї | .. | Я
+<string> ::= "{<char>}{<string>}" | ""
 
-<literal> ::= <digit> | <unary_operator> <digit> | <literal> <binary_operator> <literal> | <string>
+<literal> ::= <digit> | <string>
 
 Expressions
 -----------
