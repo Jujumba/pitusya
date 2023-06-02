@@ -94,12 +94,6 @@ impl OperatorType {
             _ => None,
         }
     }
-    pub fn is_operator(op: &str) -> bool {
-        match Self::to_operator(op) {
-            Some(_) => true,
-            None => false
-        }
-    }
 }
 
 
