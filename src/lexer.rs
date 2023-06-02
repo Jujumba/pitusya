@@ -10,6 +10,7 @@ use crate::input::InputFile;
 lazy_static!(
     static ref KEYWORD_REGEX: Regex = Regex::new(r"[a-zA-Z0-9]+").unwrap();
     static ref NUMBERS_REGEX: Regex = Regex::new(r"[0-9]+").unwrap();
+    static ref STRING_REGEX: Regex = Regex::new("\"[a-zA-Z0-0]+\"").unwrap();
     static ref OPERATORS_REGEX: Regex = Regex::new(r"<<=|>>=|<=|>=|\+=|\-=|\*=|/=|\|=|\^=|&=|%=|<<|>>|=|\+|-|\*|/|%|&|\^|\||~|!|<|>").unwrap();
 );
 
@@ -19,13 +20,21 @@ pub fn next_token(input: &mut InputFile) -> Token {
     }
     let content = input.content.iter().collect::<String>();
     match NUMBERS_REGEX.find_at(&content, input.cursor) {
-        Some(num) if num.start() == input.cursor => {
+        Some(num) if num.start() == input.cursor => { // todo
             let num = num.as_str();
             input.cursor += num.len(); // todo: repeatable code
             return Token::Literal(tokens::LiteralType::Num(tokens::NumType::Int(num.parse().unwrap())));
         },
         _ => ()
     };
+    match STRING_REGEX.find_at(&content, input.cursor) {
+        Some(str) if str.start() == input.cursor => {
+            let str: String = str.as_str().into();
+            input.cursor += str.len();
+            return Token::Literal(tokens::LiteralType::Str(str));
+        }
+       _ => (),
+    }
     match KEYWORD_REGEX.find_at(&content, input.cursor) {
         Some(keyword) if keyword.start() == input.cursor => {
             let keyword = keyword.as_str();
