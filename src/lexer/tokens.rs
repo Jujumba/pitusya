@@ -30,6 +30,7 @@ pub enum AssignmentOperator {
     BWLeftShiftEquals,
     BWRightShiftEquals,
     OrEquals,
+    AndEquals,
     XorEquals,
     ModuloEquals,
 }
@@ -50,16 +51,13 @@ pub enum BinaryOperator {
     BWRightShift,
     Comparision,
 }
-impl Token { // todo: use From<&str> trait
-    pub fn to_keyword(value: String) -> Self {
-        if value == "let" { // todo
-            Token::Keyword(KeywordType::Let)
-        } else if value == "if" {
-            Token::Keyword(KeywordType::If)
-        } else if value == "while" {
-            Token::Keyword(KeywordType::While)
-        } else {
-            Token::Identifier(value)
+impl KeywordType { // todo: use From<&str> trait
+    pub fn to_keyword(value: &str) -> Option<Self> {
+        match value {
+            "if" => Some(KeywordType::If),
+            "let" => Some(KeywordType::Let),
+            "while" => Some(KeywordType::While),
+            _ => None
         }
     }
 }
@@ -74,6 +72,7 @@ impl OperatorType {
             "<<=" => Some(Self::Assignment(AssignmentOperator::BWLeftShiftEquals)),
             ">>=" => Some(Self::Assignment(AssignmentOperator::BWRightShiftEquals)),
             "|=" => Some(Self::Assignment(AssignmentOperator::OrEquals)),
+            "&=" => Some(Self::Assignment(AssignmentOperator::AndEquals)),
             "^=" => Some(Self::Assignment(AssignmentOperator::XorEquals)),
             "%=" => Some(Self::Assignment(AssignmentOperator::ModuloEquals)),
             "+" => Some(Self::Binary(BinaryOperator::Addition)),

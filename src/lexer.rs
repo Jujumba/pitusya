@@ -1,60 +1,54 @@
 pub mod tokens;
-pub use tokens::Token;
+
+use tokens::{Token, KeywordType, OperatorType};
+
+use lazy_static::lazy_static;
+use regex::Regex;
 
 use crate::input::InputFile;
 
-use tokens::{LiteralType, NumType};
-
-use self::tokens::OperatorType;
+lazy_static!(
+    static ref KEYWORD_REGEX: Regex = Regex::new(r"[a-zA-Z0-9]+").unwrap();
+    static ref NUMBERS_REGEX: Regex = Regex::new(r"[0-9]+").unwrap();
+    static ref OPERATORS_REGEX: Regex = Regex::new(r"<<=|>>=|<=|>=|\+=|\-=|\*=|/=|\|=|\^=|&=|%=|<<|>>|=|\+|-|\*|/|%|&|\^|\||~|!|<|>").unwrap();
+);
 
 pub fn next_token(input: &mut InputFile) -> Token {
     if input.out_of_bounds() {
         return Token::EOF;
     }
-
-    input.skip_spaces();
-
-    let start = input.cursor;
-
-    if input.current_char().is_numeric() { 
-        loop {
-            input.cursor += 1;
-            if input.out_of_bounds() || !input.current_char().is_numeric() {
-                break;
-            }
-        } 
-        let numeric = input.get_substr_to_cursor(start);
-        return Token::Literal(LiteralType::Num(
-            NumType::Int(numeric.parse().unwrap())
-        ))
+    let content = input.content.iter().collect::<String>();
+    match NUMBERS_REGEX.find_at(&content, input.cursor) {
+        Some(num) if num.start() == input.cursor => {
+            let num = num.as_str();
+            input.cursor += num.len(); // todo: repeatable code
+            return Token::Literal(tokens::LiteralType::Num(tokens::NumType::Int(num.parse().unwrap())));
+        },
+        _ => ()
+    };
+    match KEYWORD_REGEX.find_at(&content, input.cursor) {
+        Some(keyword) if keyword.start() == input.cursor => {
+            let keyword = keyword.as_str();
+            input.cursor += keyword.len();
+            return match KeywordType::to_keyword(keyword) {
+                Some(keyword) => Token::Keyword(keyword),
+                None => Token::Identifier(keyword.to_string())
+            };
+        }
+        _ => ()
     }
-
-    if input.current_char().is_alphanumeric() { // starts always with an alphabetic character
-        loop {
-            input.cursor += 1;
-            if input.out_of_bounds() || !input.current_char().is_alphanumeric()  {
-                break;
+    match OPERATORS_REGEX.find_at(&content, input.cursor) {
+        Some(operator) if operator.start() == input.cursor => {
+            let operator = operator.as_str();
+            input.cursor += operator.len();
+            return match OperatorType::to_operator(operator) {
+                Some(operator) => Token::Operator(operator),
+                None => Token::Undefined(operator.to_string())
             }
         }
-        let str = input.get_substr_to_cursor(start);
-        return Token::to_keyword(str);
+        _ => () 
     }
-
-    // todo: ugly
-    let mut op = input.current_char().to_string();
-    while OperatorType::is_operator(&op) {
-        input.cursor += 1;
-        if input.out_of_bounds() {
-            break;
-        }
-        op.push(input.current_char())
-    }
-    if !input.out_of_bounds() {
-        op.pop();
-    }
-
-    match OperatorType::to_operator(&op) {
-        Some(op) => Token::Operator(op),
-        None => Token::Undefined(op)
-    }
+    let t  = Token::Undefined(input.current_char().to_string());
+    input.cursor += 1;
+    t
 }
