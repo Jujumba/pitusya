@@ -6,8 +6,10 @@ use tokens::{KeywordType, LiteralType, NumType, OperatorType, Token};
 
 use crate::input::InputFile;
 
+type Handler = dyn Fn(&str) -> Token + Sync;
+
 lazy_static! {
-    static ref SPEC: Vec<(Regex, Box<dyn Fn(&str) -> Token + Sync>)> = vec! {
+    static ref SPEC: Vec<(Regex, Box<Handler>)> = vec! {
         (Regex::new(r"[0-9]+").unwrap(), Box::new(
             |s| {
                 Token::Literal(LiteralType::Num(NumType::Int(s.parse().unwrap())))
