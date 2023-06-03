@@ -1,9 +1,9 @@
 #[derive(Debug)]
 pub enum Token {
-    Operator(OperatorType), 
-    Keyword(KeywordType), 
+    Operator(OperatorType),
+    Keyword(KeywordType),
     Literal(LiteralType),
-    Identifier(String), 
+    Identifier(String),
     Undefined(String), // For unrecognised characters, such as $ or @
     Semicol,
     EOF,
@@ -12,13 +12,12 @@ pub enum Token {
 pub enum OperatorType {
     Unary(UnaryOperator),
     Binary(BinaryOperator),
-    Assignment(AssignmentOperator)
-    // todo: special type for semicol?
+    Assignment(AssignmentOperator), // todo: special type for semicol?
 }
 #[derive(Debug)]
 pub enum UnaryOperator {
-    BWNot, 
-    UNot, 
+    BWNot,
+    UNot,
 }
 #[derive(Debug)]
 pub enum AssignmentOperator {
@@ -51,13 +50,14 @@ pub enum BinaryOperator {
     BWRightShift,
     Comparision,
 }
-impl KeywordType { // todo: use From<&str> trait
+impl KeywordType {
+    // todo: use From<&str> trait
     pub fn to_keyword(value: &str) -> Option<Self> {
         match value {
             "if" => Some(KeywordType::If),
             "let" => Some(KeywordType::Let),
             "while" => Some(KeywordType::While),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -95,7 +95,6 @@ impl OperatorType {
         }
     }
 }
-
 
 #[derive(Debug)]
 pub enum KeywordType {

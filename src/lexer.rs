@@ -1,14 +1,13 @@
 pub mod tokens;
 
-use tokens::{Token, KeywordType, OperatorType, LiteralType, NumType};
-
-use regex::Regex;
 use lazy_static::lazy_static;
+use regex::Regex;
+use tokens::{KeywordType, LiteralType, NumType, OperatorType, Token};
 
 use crate::input::InputFile;
 
-lazy_static!(
-    static ref SPEC: Vec<(Regex, Box<dyn Fn(&str) -> Token + Sync>)> = vec!{
+lazy_static! {
+    static ref SPEC: Vec<(Regex, Box<dyn Fn(&str) -> Token + Sync>)> = vec! {
         (Regex::new(r"[0-9]+").unwrap(), Box::new(
             |s| {
                 Token::Literal(LiteralType::Num(NumType::Int(s.parse().unwrap())))
@@ -36,7 +35,7 @@ lazy_static!(
             }
         ))
     };
-);
+}
 
 pub fn next_token(input: &mut InputFile) -> Token {
     if input.out_of_bounds() {
@@ -53,7 +52,7 @@ pub fn next_token(input: &mut InputFile) -> Token {
             _ => (),
         }
     }
-    let t  = Token::Undefined(input.current_char().to_string());
+    let t = Token::Undefined(input.current_char().to_string());
     input.move_cursor(1);
     t
 }
