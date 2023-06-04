@@ -44,17 +44,25 @@ pub fn next_token(input: &mut InputFile) -> Token {
         return Token::EOF;
     }
     let content = input.content.iter().collect::<String>();
+    let mut nearest: Option<regex::Match> = None;
     for (regex, closure) in SPEC.iter() {
         match regex.find_at(&content, input.cursor) {
             Some(m) if m.start() == input.cursor => {
                 let s = m.as_str();
                 input.move_cursor(s.len());
                 return closure(s);
-            }
-            _ => (),
+            },
+            Some(m) => {
+                nearest = match nearest {
+                    Some(n) if n.start() > m.start() => Some(m),
+                    None => Some(m),
+                    _ => nearest
+                };
+            },
+            _ => ()
         }
     }
-    let t = Token::Undefined(input.current_char().to_string());
-    input.move_cursor(1);
-    t
+    let undef_token_string = input.content[input.cursor..nearest.unwrap().start()].iter().collect::<String>();
+    input.move_cursor(undef_token_string.len());
+    Token::Undefined(undef_token_string)
 }
