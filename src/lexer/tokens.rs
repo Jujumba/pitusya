@@ -5,14 +5,14 @@ pub enum Token {
     Literal(LiteralType),
     Identifier(String),
     Undefined(String), // For unrecognised characters, such as $ or @
-    Semicol,
     EOF,
 }
 #[derive(Debug)]
 pub enum OperatorType {
     Unary(UnaryOperator),
     Binary(BinaryOperator),
-    Assignment(AssignmentOperator), // todo: special type for semicol?
+    Assignment(AssignmentOperator),
+    Semicol
 }
 #[derive(Debug)]
 pub enum UnaryOperator {
@@ -91,6 +91,7 @@ impl OperatorType {
             "==" => Some(Self::Binary(BinaryOperator::Comparision)),
             "~" => Some(Self::Unary(UnaryOperator::BWNot)),
             "!" => Some(Self::Unary(UnaryOperator::UNot)),
+            ";" => Some(Self::Semicol),
             _ => None,
         }
     }

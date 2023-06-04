@@ -28,7 +28,7 @@ lazy_static! {
                 }
             }
         )),
-        (Regex::new(r"<<=|>>=|<=|>=|\+=|\-=|\*=|/=|\|=|\^=|&=|%=|<<|>>|=|\+|-|\*|/|%|&|\^|\||~|!|<|>").unwrap(), Box::new(
+        (Regex::new(r"<<=|>>=|<=|>=|\+=|\-=|\*=|/=|\|=|\^=|&=|%=|<<|>>|=|\+|-|\*|/|%|&|\^|\||~|!|<|>|;").unwrap(), Box::new(
             |s| {
                 match OperatorType::to_operator(s) {
                     Some(operator) => Token::Operator(operator),
