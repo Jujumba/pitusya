@@ -43,6 +43,7 @@ pub fn next_token(input: &mut InputFile) -> Token {
     if input.out_of_bounds() {
         return Token::EOF;
     }
+    input.skip_spaces();
     let content = input.content.iter().collect::<String>();
     let mut nearest: Option<regex::Match> = None;
     for (regex, closure) in SPEC.iter() {
