@@ -13,7 +13,7 @@ pub enum OperatorType {
     Unary(UnaryOperator),
     Binary(BinaryOperator),
     Assignment(AssignmentOperator),
-    Semicol
+    Semicol,
 }
 #[derive(Debug, PartialEq)]
 pub enum UnaryOperator {
@@ -99,7 +99,6 @@ impl OperatorType {
     }
 }
 
-
 #[derive(Debug, PartialEq)]
 pub enum KeywordType {
     If,
@@ -107,13 +106,11 @@ pub enum KeywordType {
     While,
 }
 
-
 #[derive(Debug, PartialEq)]
 pub enum LiteralType {
     Num(NumType),
     Str(String),
 }
-
 
 #[derive(Debug, PartialEq)]
 pub enum NumType {

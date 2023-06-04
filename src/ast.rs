@@ -7,5 +7,5 @@ pub enum Ast {
         left: Box<Ast>,
         right: Box<Ast>,
         op: tokens::BinaryOperator,
-    }
+    },
 }

@@ -1,7 +1,7 @@
+pub mod ast;
 pub mod input;
 pub mod lexer;
 pub mod parser;
-pub mod ast;
 
 #[cfg(test)]
 mod tests {
@@ -13,6 +13,9 @@ mod tests {
             cursor: 0,
         };
         let mut input_clone = input.clone();
-        assert_eq!(parser::parse_expression_iter(&mut input), parser::parse_expression_recurs(&mut input_clone));
+        assert_eq!(
+            parser::parse_expression_iter(&mut input),
+            parser::parse_expression_recurs(&mut input_clone)
+        );
     }
 }

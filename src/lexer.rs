@@ -52,18 +52,20 @@ pub fn next_token(input: &mut InputFile) -> Token {
                 let s = m.as_str();
                 input.move_cursor(s.len());
                 return closure(s);
-            },
+            }
             Some(m) => {
                 nearest = match nearest {
                     Some(n) if n.start() > m.start() => Some(m),
                     None => Some(m),
-                    _ => nearest
+                    _ => nearest,
                 };
-            },
-            _ => ()
+            }
+            _ => (),
         }
     }
-    let undef_token_string = input.content[input.cursor..nearest.unwrap().start()].iter().collect::<String>();
+    let undef_token_string = input.content[input.cursor..nearest.unwrap().start()]
+        .iter()
+        .collect::<String>();
     input.move_cursor(undef_token_string.len());
     Token::Undefined(undef_token_string)
 }
