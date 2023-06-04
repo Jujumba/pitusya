@@ -1,3 +1,4 @@
+#[derive(Debug, PartialEq, Clone)]
 pub struct InputFile {
     pub content: Vec<char>,
     pub cursor: usize,

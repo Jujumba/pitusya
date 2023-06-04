@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Token {
     Operator(OperatorType),
     Keyword(KeywordType),
@@ -7,19 +7,20 @@ pub enum Token {
     Undefined(String), // For unrecognised characters, such as $ or @
     EOF,
 }
-#[derive(Debug)]
+
+#[derive(Debug, PartialEq)]
 pub enum OperatorType {
     Unary(UnaryOperator),
     Binary(BinaryOperator),
     Assignment(AssignmentOperator),
     Semicol
 }
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum UnaryOperator {
     BWNot,
     UNot,
 }
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum AssignmentOperator {
     Equals,
     PlusEquals,
@@ -33,7 +34,8 @@ pub enum AssignmentOperator {
     XorEquals,
     ModuloEquals,
 }
-#[derive(Debug)]
+
+#[derive(Debug, PartialEq)]
 pub enum BinaryOperator {
     Addition,
     Subtraction,
@@ -97,20 +99,23 @@ impl OperatorType {
     }
 }
 
-#[derive(Debug)]
+
+#[derive(Debug, PartialEq)]
 pub enum KeywordType {
     If,
     Let,
     While,
 }
 
-#[derive(Debug)]
+
+#[derive(Debug, PartialEq)]
 pub enum LiteralType {
     Num(NumType),
     Str(String),
 }
 
-#[derive(Debug)]
+
+#[derive(Debug, PartialEq)]
 pub enum NumType {
     Int(i64),
     Float(f64),
