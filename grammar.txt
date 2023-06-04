@@ -7,14 +7,13 @@ Operators
 Literals
 --------
 <digit> ::= 0 | .. | 9
+<number> :: <digit>{<digit>}+
 <number> ::= <digit> <number> | <digit>
 <char> ::= a | .. | Z | а | .. | ї | .. | Я
-<string> ::= "{<char>}{<string>}" | ""
-
-<literal> ::= <digit> | <string>
+<string> ::= "{<char>}+" | ""
+<literal> ::= <number> | <string>
 
 Expressions
 -----------
-<expression> ::= <literal> | <identifier>
 <unary_expression> ::= <unary_operator> <expression>
-<binary_exression> = <expression> <binary_operator> <expression>
+<expression> ::= [<literal> | <identifier>] {<binary_operator> [<literal> | <identifier>]}+ ;
