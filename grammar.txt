@@ -10,7 +10,7 @@ Literals
 <number> :: <digit>{<digit>}+
 <number> ::= <digit> <number> | <digit>
 <char> ::= a | .. | Z | а | .. | ї | .. | Я
-<string> ::= "{<char>}+" | ""
+<string> ::= "{[<char>]+}"
 <literal> ::= <number> | <string>
 
 Expressions
