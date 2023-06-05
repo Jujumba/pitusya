@@ -2,37 +2,37 @@ pub mod tokens;
 
 use lazy_static::lazy_static;
 use regex::Regex;
-use tokens::{KeywordType, LiteralType, NumType, OperatorType, Token};
+use tokens::{Token, KeywordKind, LiteralKind, NumType, OperatorKind, TokenKind};
 
 use crate::input::InputFile;
 
-type Handler = dyn Fn(&str) -> Token + Sync;
+type Handler = dyn Fn(&str) -> TokenKind + Sync;
 
 lazy_static! {
     static ref SPEC: Vec<(Regex, Box<Handler>)> = vec! {
         (Regex::new(r"[0-9]+").unwrap(), Box::new(
             |s| {
-                Token::Literal(LiteralType::Num(NumType::Int(s.parse().unwrap())))
+                TokenKind::Literal(LiteralKind::Num(NumType::Int(s.parse().unwrap())))
             }
         )),
         (Regex::new("\"[a-zA-Z0-0]+\"").unwrap(), Box::new(
             |s| {
-                Token::Literal(LiteralType::Str(s.into()))
+                TokenKind::Literal(LiteralKind::Str(s.into()))
             }
         )),
         (Regex::new(r"[a-zA-Z0-9]+").unwrap(), Box::new(
             |s| {
-                match KeywordType::to_keyword(s) {
-                    Some(keyword) => Token::Keyword(keyword),
-                    None => Token::Identifier(s.into())
+                match KeywordKind::to_keyword(s) {
+                    Some(keyword) => TokenKind::Keyword(keyword),
+                    None => TokenKind::Identifier(s.into())
                 }
             }
         )),
         (Regex::new(r"<<=|>>=|<=|>=|\+=|\-=|\*=|/=|\|=|\^=|&=|%=|<<|>>|=|\+|-|\*|/|%|&|\^|\||~|!|<|>|;").unwrap(), Box::new(
             |s| {
-                match OperatorType::to_operator(s) {
-                    Some(operator) => Token::Operator(operator),
-                    None => Token::Undefined(s.into())
+                match OperatorKind::to_operator(s) {
+                    Some(operator) => TokenKind::Operator(operator),
+                    None => TokenKind::Undefined(s.into())
                 }
             }
         ))
@@ -41,7 +41,10 @@ lazy_static! {
 
 pub fn next_token(input: &mut InputFile) -> Token {
     if input.out_of_bounds() {
-        return Token::EOF;
+        return Token {
+            kind: TokenKind::EOF,
+            len: 0,
+        }
     }
     input.skip_spaces();
     let content = input.content.iter().collect::<String>();
@@ -49,9 +52,13 @@ pub fn next_token(input: &mut InputFile) -> Token {
     for (regex, closure) in SPEC.iter() {
         match regex.find_at(&content, input.cursor) {
             Some(m) if m.start() == input.cursor => {
-                let s = m.as_str();
-                input.move_cursor(s.len());
-                return closure(s);
+                let len = m.len();
+                input.move_cursor(len);
+                let kind = closure(m.as_str());
+                return Token {
+                    kind,
+                    len,
+                }
             }
             Some(m) => {
                 nearest = match nearest {
@@ -63,9 +70,13 @@ pub fn next_token(input: &mut InputFile) -> Token {
             _ => (),
         }
     }
-    let undef_token_string = input.content[input.cursor..nearest.unwrap().start()]
+    let undef = input.content[input.cursor..nearest.unwrap().start()]
         .iter()
         .collect::<String>();
-    input.move_cursor(undef_token_string.len());
-    Token::Undefined(undef_token_string)
+    let len = undef.len();
+    input.move_cursor(undef.len());
+    Token {
+        kind: TokenKind::Undefined(undef),
+        len,
+    }
 }

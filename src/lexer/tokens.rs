@@ -1,15 +1,21 @@
 #[derive(Debug, PartialEq)]
-pub enum Token {
-    Operator(OperatorType),
-    Keyword(KeywordType),
-    Literal(LiteralType),
+pub struct Token {
+    pub kind: TokenKind,
+    pub len: usize,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum TokenKind {
+    Operator(OperatorKind),
+    Keyword(KeywordKind),
+    Literal(LiteralKind),
     Identifier(String),
     Undefined(String), // For unrecognised characters, such as $ or @
     EOF,
 }
 
 #[derive(Debug, PartialEq)]
-pub enum OperatorType {
+pub enum OperatorKind {
     Unary(UnaryOperator),
     Binary(BinaryOperator),
     Assignment(AssignmentOperator),
@@ -52,18 +58,18 @@ pub enum BinaryOperator {
     BWRightShift,
     Comparision,
 }
-impl KeywordType {
+impl KeywordKind {
     // todo: use From<&str> trait
     pub fn to_keyword(value: &str) -> Option<Self> {
         match value {
-            "if" => Some(KeywordType::If),
-            "let" => Some(KeywordType::Let),
-            "while" => Some(KeywordType::While),
+            "if" => Some(KeywordKind::If),
+            "let" => Some(KeywordKind::Let),
+            "while" => Some(KeywordKind::While),
             _ => None,
         }
     }
 }
-impl OperatorType {
+impl OperatorKind {
     pub fn to_operator(op: &str) -> Option<Self> {
         match op {
             "=" => Some(Self::Assignment(AssignmentOperator::Equals)),
@@ -100,14 +106,14 @@ impl OperatorType {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum KeywordType {
+pub enum KeywordKind {
     If,
     Let,
     While,
 }
 
 #[derive(Debug, PartialEq)]
-pub enum LiteralType {
+pub enum LiteralKind {
     Num(NumType),
     Str(String),
 }

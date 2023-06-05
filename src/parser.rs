@@ -3,20 +3,21 @@ use std::collections::VecDeque;
 use crate::ast::Ast;
 use crate::input::InputFile;
 use crate::lexer::next_token;
-use crate::lexer::tokens::{BinaryOperator, OperatorType, Token};
+use crate::lexer::tokens::{BinaryOperator, OperatorKind, TokenKind};
 
 pub fn parse_expression_iter(input: &mut InputFile) -> Result<Ast, String> {
     let mut ast_stack: VecDeque<Ast> = VecDeque::new();
     let mut op_stack: VecDeque<BinaryOperator> = VecDeque::new();
     loop {
-        match next_token(input) {
-            i @ Token::Identifier(_) => ast_stack.push_back(Ast::ValueNode(i)),
-            l @ Token::Literal(_) => ast_stack.push_back(Ast::ValueNode(l)),
+        let t = next_token(input);
+        match &t.kind {
+            TokenKind::Identifier(_) | TokenKind::Literal(_) => ast_stack.push_back(Ast::ValueNode(t)),
             e => return Err(format!("Expected identifier ot literal, but got `{e:?}`")),
         }
-        match next_token(input) {
-            Token::Operator(OperatorType::Semicol) => break,
-            Token::Operator(OperatorType::Binary(bin)) => op_stack.push_back(bin),
+        let t = next_token(input);
+        match t.kind {
+            TokenKind::Operator(OperatorKind::Semicol) => break,
+            TokenKind::Operator(OperatorKind::Binary(bin)) => op_stack.push_back(bin),
             e => return Err(format!("Expected operator or semicolon, but got `{e:?}`")),
         }
     }
@@ -38,15 +39,15 @@ pub fn parse_expression_iter(input: &mut InputFile) -> Result<Ast, String> {
     return Ok(ast);
 }
 pub fn parse_expression_recurs(input: &mut InputFile) -> Result<Ast, String> {
-    let ast = match next_token(input) {
-        i @ Token::Identifier(_) => Ast::ValueNode(i),
-        l @ Token::Literal(_) => Ast::ValueNode(l),
+    let t = next_token(input);
+    let ast = match t.kind {
+        TokenKind::Identifier(_) | TokenKind::Literal(_) => Ast::ValueNode(t),
         e => {
             return Err(format!("Expected identifier or literal, but got `{e:#?}"));
         }
     };
-    match next_token(input) {
-        Token::Operator(OperatorType::Binary(op)) => Ok(Ast::BinaryNode {
+    match next_token(input).kind {
+        TokenKind::Operator(OperatorKind::Binary(op)) => Ok(Ast::BinaryNode {
             left: Box::new(ast),
             right: Box::new(match parse_expression_recurs(input) {
                 // todo: recursion is extremely slooow!!!
@@ -55,7 +56,7 @@ pub fn parse_expression_recurs(input: &mut InputFile) -> Result<Ast, String> {
             }),
             op,
         }),
-        Token::Operator(OperatorType::Semicol) => Ok(ast),
+        TokenKind::Operator(OperatorKind::Semicol) => Ok(ast),
         e => Err(format!("Expected operator or semicolon, but got `{e:#?}`")),
     }
 }
