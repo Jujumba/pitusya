@@ -5,13 +5,22 @@ use crate::lexer::tokens;
 #[derive(Debug, PartialEq)]
 pub enum Ast {
     ValueNode(tokens::Token),
+    IdentifierNode(String),
     BinaryNode {
         left: Box<Ast>,
         right: Box<Ast>,
-        op: tokens::BinaryOperator,
+        op: tokens::OperatorKind,
     },
     LetNode {
         assignee: Box<Ast>,
         value: Box<Ast>
+    },
+    IfNode {
+        condition: Box<Ast>,
+        body: Vec<Box<Ast>>,
+    },
+    WhileNode {
+        condition: Box<Ast>,
+        body: Vec<Box<Ast>>,
     }
 }
