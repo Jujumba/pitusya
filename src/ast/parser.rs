@@ -43,18 +43,12 @@ pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
     let t = next_token(input);
     let ast = match t.kind {
         TokenKind::Identifier(_) | TokenKind::Literal(_) => Ast::ValueNode(t),
-        e => {
-            return Err(format!("Expected identifier or literal, but got `{e:#?}"));
-        }
+        e => return Err(format!("Expected identifier or literal, but got `{e:#?}")),
     };
     match next_token(input).kind {
         TokenKind::Operator(OperatorKind::Binary(op)) => Ok(Ast::BinaryNode {
             left: Box::new(ast),
-            right: Box::new(match parse_expression(input) {
-                // todo: recursion is extremely slooow!!!
-                e @ Err(_) => return e,
-                Ok(right) => right,
-            }),
+            right: Box::new(parse_expression(input)?),
             op,
         }),
         TokenKind::Operator(OperatorKind::Semicol) => Ok(ast),
@@ -70,14 +64,12 @@ pub fn parse_let_expr(input: &mut InputFile) -> Result<Ast, String> {
     match &assignee.kind {
         TokenKind::Identifier(_) => {
             match next_token(input).kind {
-                TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::Equals)) => {
-                    match parse_expression(input) {
-                        Ok(rval) => {
-                            Ok(Ast::LetNode { assignee: Box::new(Ast::ValueNode(assignee)), value: Box::new(rval) })
-                        }
-                        e @ Err(_) => e
+                TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::Equals)) => Ok(
+                    Ast::LetNode {
+                        assignee: Box::new(Ast::ValueNode(assignee)),
+                        value: Box::new(parse_expression(input)?)
                     }
-                }
+                ),
                 e => Err(format!("Expected `=`, but got `{e:?}"))
             }
         }
