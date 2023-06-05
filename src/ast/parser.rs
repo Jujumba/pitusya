@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use crate::ast::Ast;
 use crate::input::InputFile;
 use crate::lexer::next_token;
-use crate::lexer::tokens::{BinaryOperator, OperatorKind, TokenKind};
+use crate::lexer::tokens::{BinaryOperator, OperatorKind, TokenKind, KeywordKind, AssignmentOperator};
 
 fn parse_expression_iter(input: &mut InputFile) -> Result<Ast, String> {
     let mut ast_stack: VecDeque<Ast> = VecDeque::new();
@@ -58,5 +58,28 @@ pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
         }),
         TokenKind::Operator(OperatorKind::Semicol) => Ok(ast),
         e => Err(format!("Expected operator or semicolon, but got `{e:#?}`")),
+    }
+}
+pub fn parse_let_expr(input: &mut InputFile) -> Result<Ast, String> {
+    let t = next_token(input);
+    if TokenKind::Keyword(KeywordKind::Let) != t.kind  {
+        return Err(format!("Expected `let`, but got `{t:?}`"));
+    }
+    let assignee = next_token(input);
+    match &assignee.kind {
+        TokenKind::Identifier(_) => {
+            match next_token(input).kind {
+                TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::Equals)) => {
+                    match parse_expression(input) {
+                        Ok(rval) => {
+                            Ok(Ast::LetNode { assignee: Box::new(Ast::ValueNode(assignee)), value: Box::new(rval) })
+                        }
+                        e @ Err(_) => e
+                    }
+                }
+                e => Err(format!("Expected `=`, but got `{e:?}"))
+            }
+        }
+        e => Err(format!("Expected identifier, but got `{e:?}`"))
     }
 }

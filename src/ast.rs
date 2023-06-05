@@ -10,4 +10,8 @@ pub enum Ast {
         right: Box<Ast>,
         op: tokens::BinaryOperator,
     },
+    LetNode {
+        assignee: Box<Ast>,
+        value: Box<Ast>
+    }
 }
