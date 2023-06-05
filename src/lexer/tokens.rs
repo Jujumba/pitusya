@@ -19,7 +19,17 @@ pub enum OperatorKind {
     Unary(UnaryOperator),
     Binary(BinaryOperator),
     Assignment(AssignmentOperator),
+    Paren(ParenKind),
     Semicol,
+}
+#[derive(Debug, PartialEq)]
+pub enum ParenKind {
+    LParen,     // (
+    RParen,     // )
+    LCParen,    // {
+    RCParen,    // }
+    LBracket,   // [
+    RBracket,   // ]
 }
 #[derive(Debug, PartialEq)]
 pub enum UnaryOperator {
@@ -100,6 +110,12 @@ impl OperatorKind {
             "~" => Some(Self::Unary(UnaryOperator::BWNot)),
             "!" => Some(Self::Unary(UnaryOperator::UNot)),
             ";" => Some(Self::Semicol),
+            "(" => Some(Self::Paren(ParenKind::LCParen)),
+            ")" => Some(Self::Paren(ParenKind::RParen)),
+            "{" => Some(Self::Paren(ParenKind::LCParen)),
+            "}" => Some(Self::Paren(ParenKind::RCParen)),
+            "[" => Some(Self::Paren(ParenKind::LBracket)),
+            "]" => Some(Self::Paren(ParenKind::RBracket)),
             _ => None,
         }
     }
