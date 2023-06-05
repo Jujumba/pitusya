@@ -5,6 +5,7 @@ use crate::input::InputFile;
 use crate::lexer::next_token;
 use crate::lexer::tokens::{BinaryOperator, OperatorKind, TokenKind, KeywordKind, AssignmentOperator};
 
+#[allow(dead_code)]
 fn parse_expression_iter(input: &mut InputFile) -> Result<Ast, String> {
     let mut ast_stack: VecDeque<Ast> = VecDeque::new();
     let mut op_stack: VecDeque<BinaryOperator> = VecDeque::new();
