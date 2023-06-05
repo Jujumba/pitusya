@@ -1,3 +1,5 @@
+pub mod parser;
+
 use crate::lexer::tokens;
 
 #[derive(Debug, PartialEq)]

@@ -1,11 +1,10 @@
 pub mod ast;
 pub mod input;
 pub mod lexer;
-pub mod parser;
 
 #[cfg(test)]
 mod tests {
-    use crate::{input, parser};
+    use crate::{input, ast::parser};
     #[test]
     fn test_parsing() {
         let mut input = input::InputFile {
