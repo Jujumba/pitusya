@@ -5,7 +5,7 @@ use crate::input::InputFile;
 use crate::lexer::next_token;
 use crate::lexer::tokens::{BinaryOperator, OperatorKind, TokenKind};
 
-pub fn parse_expression_iter(input: &mut InputFile) -> Result<Ast, String> {
+fn parse_expression_iter(input: &mut InputFile) -> Result<Ast, String> {
     let mut ast_stack: VecDeque<Ast> = VecDeque::new();
     let mut op_stack: VecDeque<BinaryOperator> = VecDeque::new();
     loop {
@@ -38,7 +38,7 @@ pub fn parse_expression_iter(input: &mut InputFile) -> Result<Ast, String> {
     }
     return Ok(ast);
 }
-pub fn parse_expression_recurs(input: &mut InputFile) -> Result<Ast, String> {
+pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
     let t = next_token(input);
     let ast = match t.kind {
         TokenKind::Identifier(_) | TokenKind::Literal(_) => Ast::ValueNode(t),
@@ -49,7 +49,7 @@ pub fn parse_expression_recurs(input: &mut InputFile) -> Result<Ast, String> {
     match next_token(input).kind {
         TokenKind::Operator(OperatorKind::Binary(op)) => Ok(Ast::BinaryNode {
             left: Box::new(ast),
-            right: Box::new(match parse_expression_recurs(input) {
+            right: Box::new(match parse_expression(input) {
                 // todo: recursion is extremely slooow!!!
                 e @ Err(_) => return e,
                 Ok(right) => right,
