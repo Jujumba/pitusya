@@ -26,8 +26,8 @@ pub enum OperatorKind {
 pub enum ParenKind {
     LParen,     // (
     RParen,     // )
-    LCParen,    // {
-    RCParen,    // }
+    LCurly,     // {
+    RCurly,     // }
     LBracket,   // [
     RBracket,   // ]
 }
@@ -110,10 +110,10 @@ impl OperatorKind {
             "~" => Some(Self::Unary(UnaryOperator::BWNot)),
             "!" => Some(Self::Unary(UnaryOperator::UNot)),
             ";" => Some(Self::Semicol),
-            "(" => Some(Self::Paren(ParenKind::LCParen)),
+            "(" => Some(Self::Paren(ParenKind::LCurly)),
             ")" => Some(Self::Paren(ParenKind::RParen)),
-            "{" => Some(Self::Paren(ParenKind::LCParen)),
-            "}" => Some(Self::Paren(ParenKind::RCParen)),
+            "{" => Some(Self::Paren(ParenKind::LCurly)),
+            "}" => Some(Self::Paren(ParenKind::RCurly)),
             "[" => Some(Self::Paren(ParenKind::LBracket)),
             "]" => Some(Self::Paren(ParenKind::RBracket)),
             _ => None,
