@@ -17,6 +17,10 @@ impl InputFile {
     pub fn move_cursor(&mut self, n: usize) {
         self.cursor += n
     }
+    #[inline]
+    pub fn move_back_cursor(&mut self, n: usize) {
+        self.cursor -= n;
+    }
     pub fn skip_spaces(&mut self) {
         while !self.out_of_bounds() && self.current_char().is_whitespace() {
             self.move_cursor(1);
