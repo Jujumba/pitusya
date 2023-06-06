@@ -110,7 +110,7 @@ impl OperatorKind {
             "~" => Some(Self::Unary(UnaryOperator::BWNot)),
             "!" => Some(Self::Unary(UnaryOperator::UNot)),
             ";" => Some(Self::Semicol),
-            "(" => Some(Self::Paren(ParenKind::LCurly)),
+            "(" => Some(Self::Paren(ParenKind::LParen)),
             ")" => Some(Self::Paren(ParenKind::RParen)),
             "{" => Some(Self::Paren(ParenKind::LCurly)),
             "}" => Some(Self::Paren(ParenKind::RCurly)),
