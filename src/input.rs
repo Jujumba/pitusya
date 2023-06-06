@@ -26,4 +26,10 @@ impl InputFile {
             self.move_cursor(1);
         }
     }
+    pub fn new(content: String) -> Self {
+        Self {
+            content: content.chars().collect(),
+            cursor: 0
+        }
+    }
 }
