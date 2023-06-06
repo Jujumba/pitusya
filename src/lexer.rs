@@ -32,7 +32,7 @@ lazy_static! {
             |s| {
                 match OperatorKind::to_operator(s) {
                     Some(operator) => TokenKind::Operator(operator),
-                    None => TokenKind::Undefined(s.into())
+                    None => TokenKind::Undefined(s.chars().next().unwrap())
                 }
             }
         ))
@@ -48,7 +48,6 @@ pub fn next_token(input: &mut InputFile) -> Token {
     }
     input.skip_spaces();
     let content = input.content.iter().collect::<String>();
-    let mut nearest: Option<regex::Match> = None;
     for (regex, closure) in SPEC.iter() {
         match regex.find_at(&content, input.cursor) {
             Some(m) if m.start() == input.cursor => {
@@ -60,23 +59,13 @@ pub fn next_token(input: &mut InputFile) -> Token {
                     len,
                 }
             }
-            Some(m) => {
-                nearest = match nearest {
-                    Some(n) if n.start() > m.start() => Some(m),
-                    None => Some(m),
-                    _ => nearest,
-                };
-            }
             _ => (),
         }
     }
-    let undef = input.content[input.cursor..nearest.unwrap().start()]
-        .iter()
-        .collect::<String>();
-    let len = undef.len();
-    input.move_cursor(undef.len());
+    let c = input.current_char();
+    input.move_cursor(1);
     Token {
-        kind: TokenKind::Undefined(undef),
-        len,
+        kind: TokenKind::Undefined(c),
+        len: 1,
     }
 }

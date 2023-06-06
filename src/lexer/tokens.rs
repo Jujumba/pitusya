@@ -10,7 +10,7 @@ pub enum TokenKind {
     Keyword(KeywordKind),
     Literal(LiteralKind),
     Identifier(String),
-    Undefined(String), // For unrecognised characters, such as $ or @
+    Undefined(char), // For unrecognised characters, such as $ or @
     EOF,
 }
 
