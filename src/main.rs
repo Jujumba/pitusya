@@ -1,9 +1,6 @@
 use pitusya::input::InputFile;
 
 fn main() {
-    let mut titi = InputFile {
-        content: "1;".chars().collect(),
-        cursor: 0,
-    };
-    println!("{:#?}", pitusya::parser::parse_expression_iter(&mut titi));
+    let mut titi = InputFile::new(String::from("1 == 1;"));
+    println!("{:#?}", pitusya::ast::parser::parse(&mut titi));
 }
