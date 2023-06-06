@@ -4,17 +4,54 @@ pub mod lexer;
 
 #[cfg(test)]
 mod tests {
-    use crate::{input, ast::parser};
+use crate::{
+        ast::parser,
+        input::InputFile,
+        lexer::{next_token, tokens::*},
+    };
     #[test]
-    fn test_parsing() {
-        let mut input = input::InputFile {
-            content: "1 + 1 * 2;".chars().collect(),
+    #[should_panic]
+    fn test_bad_input() {
+        let mut incorrect = InputFile {
+            content: "1 = 1;".chars().collect(),
             cursor: 0,
         };
-        let mut input_clone = input.clone();
+        parser::parse(&mut incorrect).unwrap();
+    }
+    #[test]
+    fn test_let_expr() {
+        let mut parse = InputFile {
+            content: "let pitusya = \"cool\";".chars().collect(),
+            cursor: 0,
+        };
+        parser::parse(&mut parse).unwrap();
+    }
+    #[test]
+    fn test_lexer() {
+        let mut tok_seq = InputFile::new(String::from("==<=|=%==<<="));
         assert_eq!(
-            parser::parse_expression_iter(&mut input),
-            parser::parse_expression_recurs(&mut input_clone)
+            next_token(&mut tok_seq).kind,
+            TokenKind::Operator(OperatorKind::Binary(BinaryOperator::Comparision))
+        );
+        assert_eq!(
+            next_token(&mut tok_seq).kind,
+            TokenKind::Operator(OperatorKind::Binary(BinaryOperator::LessOrEq))
+        );
+        assert_eq!(
+            next_token(&mut tok_seq).kind,
+            TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::OrEquals))
+        );
+        assert_eq!(
+            next_token(&mut tok_seq).kind,
+            TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::ModuloEquals))
+        );
+        assert_eq!(
+            next_token(&mut tok_seq).kind,
+            TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::Equals))
+        );
+        assert_eq!(
+            next_token(&mut tok_seq).kind,
+            TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::BWLeftShiftEquals))
         );
     }
 }
