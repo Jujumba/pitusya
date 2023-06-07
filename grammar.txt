@@ -7,8 +7,7 @@ Operators
 Literals
 --------
 <digit> ::= 0 | .. | 9
-<number> :: <digit>{<digit>}+
-<number> ::= <digit> <number> | <digit>
+<number> :: <digit>+
 <char> ::= a | .. | Z | а | .. | ї | .. | Я
 <string> ::= "{[<char>]+}"
 <literal> ::= <number> | <string>
