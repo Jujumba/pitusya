@@ -24,12 +24,12 @@ pub enum OperatorKind {
 }
 #[derive(Debug, PartialEq)]
 pub enum ParenKind {
-    LParen,     // (
-    RParen,     // )
-    LCurly,     // {
-    RCurly,     // }
-    LBracket,   // [
-    RBracket,   // ]
+    LParen,   // (
+    RParen,   // )
+    LCurly,   // {
+    RCurly,   // }
+    LBracket, // [
+    RBracket, // ]
 }
 #[derive(Debug, PartialEq)]
 pub enum UnaryOperator {

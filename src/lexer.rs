@@ -2,7 +2,7 @@ pub mod tokens;
 
 use lazy_static::lazy_static;
 use regex::Regex;
-use tokens::{Token, KeywordKind, LiteralKind, NumType, OperatorKind, TokenKind};
+use tokens::{KeywordKind, LiteralKind, NumType, OperatorKind, Token, TokenKind};
 
 use crate::input::InputFile;
 
@@ -44,7 +44,7 @@ pub fn next_token(input: &mut InputFile) -> Token {
         return Token {
             kind: TokenKind::EOF,
             len: 0,
-        }
+        };
     }
     input.skip_spaces();
     let content = input.content.iter().collect::<String>();
@@ -54,10 +54,7 @@ pub fn next_token(input: &mut InputFile) -> Token {
                 let len = m.len();
                 input.move_cursor(len);
                 let kind = closure(m.as_str());
-                return Token {
-                    kind,
-                    len,
-                }
+                return Token { kind, len };
             }
             _ => (),
         }

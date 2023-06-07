@@ -3,15 +3,23 @@ use crate::input::InputFile;
 use crate::lexer::next_token;
 use crate::lexer::tokens::*;
 
+macro_rules! expect {
+    ($expected: expr, $e: expr) => {
+        Err(format!("Expected {}, but got {:?}", $expected, $e))
+    };
+}
+
 pub fn parse(input: &mut InputFile) -> Result<Ast, String> {
     let t = next_token(input);
     match &t.kind {
         TokenKind::Keyword(KeywordKind::Let) => parse_let_expr(input),
-        TokenKind::Identifier(_) | TokenKind::Literal(_) | TokenKind::Operator(OperatorKind::Paren(ParenKind::LParen)) => {
+        TokenKind::Identifier(_)
+        | TokenKind::Literal(_)
+        | TokenKind::Operator(OperatorKind::Paren(ParenKind::LParen)) => {
             input.move_back_cursor(t.len);
             parse_expression(input)
         }
-        _ => Err(format!("Unsupported!"))
+        _ => Err(format!("Unexpected token at position {}", input.cursor)),
     }
 }
 pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
@@ -23,41 +31,40 @@ pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
             let ast = Ast::UnitNode(Box::new(parse_expression(input)?));
             let t = next_token(input);
             match &t.kind {
-                TokenKind::Operator(OperatorKind::Paren(ParenKind::RParen)) => return Err("Unexpected `(`".to_string()),
+                TokenKind::Operator(OperatorKind::Paren(ParenKind::RParen)) => {
+                    return Err("Unexpected `)`".to_string())
+                }
                 _ => {
                     input.move_back_cursor(t.len);
                     ast
                 }
             }
-        } 
-        e => return Err(format!("Expected identifier or literal, but got `{e:?}")),
+        }
+        e => return expect!("identifier or literal", e),
     };
     match next_token(input).kind {
-        TokenKind::Operator(OperatorKind::Semicol) | TokenKind::Operator(OperatorKind::Paren(ParenKind::RParen)) => Ok(ast),
-        TokenKind::Operator(op @ OperatorKind::Binary(_)) => Ok(
-            Ast::BinaryNode {
-                left: Box::new(ast),
-                right: Box::new(parse_expression(input)?),
-                op,
-            }
-        ),
-        e => Err(format!("Expected operator or semicolon, but got `{e:?}`")),
+        TokenKind::Operator(OperatorKind::Semicol)
+        | TokenKind::Operator(OperatorKind::Paren(ParenKind::RParen)) => Ok(ast),
+        TokenKind::Operator(op @ OperatorKind::Binary(_)) => Ok(Ast::BinaryNode {
+            left: Box::new(ast),
+            right: Box::new(parse_expression(input)?),
+            op,
+        }),
+        e => expect!("operator or semicolon", e),
     }
 }
 pub fn parse_let_expr(input: &mut InputFile) -> Result<Ast, String> {
     let assignee = next_token(input);
     match &assignee.kind {
-        TokenKind::Identifier(_) => {
-            match next_token(input).kind {
-                TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::Equals)) => Ok(
-                    Ast::LetNode {
-                        assignee: Box::new(Ast::ValueNode(assignee)),
-                        value: Box::new(parse_expression(input)?)
-                    }
-                ),
-                e => Err(format!("Expected `=`, but got `{e:?}"))
+        TokenKind::Identifier(_) => match next_token(input).kind {
+            TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::Equals)) => {
+                Ok(Ast::LetNode {
+                    assignee: Box::new(Ast::ValueNode(assignee)),
+                    value: Box::new(parse_expression(input)?),
+                })
             }
-        }
-        e => Err(format!("Expected identifier, but got `{e:?}`"))
+            e => expect!("=", e),
+        },
+        e => expect!("identifier", e),
     }
 }

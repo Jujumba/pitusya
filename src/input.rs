@@ -29,7 +29,7 @@ impl InputFile {
     pub fn new(content: String) -> Self {
         Self {
             content: content.chars().collect(),
-            cursor: 0
+            cursor: 0,
         }
     }
 }

@@ -14,7 +14,7 @@ pub enum Ast {
     },
     LetNode {
         assignee: Box<Ast>,
-        value: Box<Ast>
+        value: Box<Ast>,
     },
     IfNode {
         condition: Box<Ast>,
@@ -23,5 +23,5 @@ pub enum Ast {
     WhileNode {
         condition: Box<Ast>,
         body: Vec<Box<Ast>>,
-    }
+    },
 }

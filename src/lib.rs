@@ -4,11 +4,10 @@ pub mod lexer;
 
 #[cfg(test)]
 mod tests {
-use crate::{
-        ast::parser,
-        input::InputFile,
-        lexer::{next_token, tokens::*},
-    };
+    use crate::ast::parser;
+    use crate::input::InputFile;
+    use crate::lexer::next_token;
+    use crate::lexer::tokens::*;
     #[test]
     #[should_panic]
     fn test_bad_input() {
@@ -51,7 +50,9 @@ use crate::{
         );
         assert_eq!(
             next_token(&mut tok_seq).kind,
-            TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::BWLeftShiftEquals))
+            TokenKind::Operator(OperatorKind::Assignment(
+                AssignmentOperator::BWLeftShiftEquals
+            ))
         );
     }
 }
