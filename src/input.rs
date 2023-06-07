@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq, Clone)]
 pub struct InputFile {
-    pub content: Vec<char>,
-    pub cursor: usize,
+    content: Vec<char>,
+    cursor: usize,
 }
 
 impl InputFile {
@@ -21,10 +21,17 @@ impl InputFile {
     pub fn move_back_cursor(&mut self, n: usize) {
         self.cursor -= n;
     }
+    #[inline]
+    pub fn get_cursor(&self) -> usize {
+        self.cursor
+    }
     pub fn skip_spaces(&mut self) {
         while !self.out_of_bounds() && self.current_char().is_whitespace() {
             self.move_cursor(1);
         }
+    }
+    pub fn read_to_string(&self) -> String {
+        self.content.iter().collect()
     }
     pub fn new(content: String) -> Self {
         Self {

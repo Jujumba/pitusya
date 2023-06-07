@@ -47,10 +47,11 @@ pub fn next_token(input: &mut InputFile) -> Token {
         };
     }
     input.skip_spaces();
-    let content = input.content.iter().collect::<String>();
+    let content = input.read_to_string();
+    let curs = input.get_cursor();
     for (regex, closure) in SPEC.iter() {
-        match regex.find_at(&content, input.cursor) {
-            Some(m) if m.start() == input.cursor => {
+        match regex.find_at(&content, curs) {
+            Some(m) if m.start() == curs => {
                 let len = m.len();
                 input.move_cursor(len);
                 let kind = closure(m.as_str());

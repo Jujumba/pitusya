@@ -19,7 +19,10 @@ pub fn parse(input: &mut InputFile) -> Result<Ast, String> {
             input.move_back_cursor(t.len);
             parse_expression(input)
         }
-        _ => Err(format!("Unexpected token at position {}", input.cursor)),
+        _ => Err(format!(
+            "Unexpected token at position {}",
+            input.get_cursor()
+        )),
     }
 }
 pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {

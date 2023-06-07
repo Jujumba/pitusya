@@ -11,18 +11,12 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_bad_input() {
-        let mut incorrect = InputFile {
-            content: "1 = 1;".chars().collect(),
-            cursor: 0,
-        };
+        let mut incorrect = InputFile::new("1 + 1;".to_string());
         parser::parse(&mut incorrect).unwrap();
     }
     #[test]
     fn test_let_expr() {
-        let mut parse = InputFile {
-            content: "let pitusya = \"cool\";".chars().collect(),
-            cursor: 0,
-        };
+        let mut parse = InputFile::new("let pitusya = \"cool\";".to_string());
         parser::parse(&mut parse).unwrap();
     }
     #[test]
