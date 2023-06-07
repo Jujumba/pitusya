@@ -31,7 +31,10 @@ impl InputFile {
         }
     }
     pub fn read_to_string(&self) -> String {
-        self.content.iter().collect()
+        let mut s = String::new();
+        s.reserve(self.content.len());
+        self.content.iter().for_each(|c| s.push(*c));
+        s
     }
     pub fn new(content: String) -> Self {
         Self {
