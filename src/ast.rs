@@ -6,6 +6,7 @@ use crate::lexer::tokens;
 pub enum Ast {
     ValueNode(tokens::Token),
     IdentifierNode(String),
+    UnitNode(Box<Ast>),
     BinaryNode {
         left: Box<Ast>,
         right: Box<Ast>,
