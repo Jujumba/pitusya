@@ -7,6 +7,10 @@ pub enum Ast {
     ValueNode(tokens::Token),
     IdentifierNode(String),
     UnitNode(Box<Ast>),
+    UnaryNode {
+        value: Box<Ast>,
+        op: tokens::OperatorKind,
+    },
     BinaryNode {
         left: Box<Ast>,
         right: Box<Ast>,
