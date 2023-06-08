@@ -26,7 +26,7 @@ pub enum OperatorKind {
     Comparision,    // ==
     Equals,         // =
     Addition,       // +
-    Subtraction,    // - 
+    Subtraction,    // -
     Multiplication, // *
     Division,       // /
     Bigger,         // >
@@ -42,7 +42,7 @@ pub enum OperatorKind {
     BWNot,          // ~
     UNot,           // !
 }
-impl TryFrom<&str> for  KeywordKind {
+impl TryFrom<&str> for KeywordKind {
     type Error = ();
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
