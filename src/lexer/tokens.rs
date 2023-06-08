@@ -58,6 +58,7 @@ impl TryFrom<&str> for OperatorKind {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
             "<=" => Ok(Self::LessOrEq),
+            ">=" => Ok(Self::BiggerOrEq),
             "<<" => Ok(Self::BWLeftShift),
             ">>" => Ok(Self::BWRightShift),
             "==" => Ok(Self::Comparision),
