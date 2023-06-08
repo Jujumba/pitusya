@@ -16,107 +16,72 @@ pub enum TokenKind {
 
 #[derive(Debug, PartialEq)]
 pub enum OperatorKind {
-    Unary(UnaryOperator),
-    Binary(BinaryOperator),
-    Assignment(AssignmentOperator),
-    Paren(ParenKind),
-    Semicol,
+    LParen,         // (
+    RParen,         // )
+    LCurly,         // {
+    RCurly,         // }
+    LBracket,       // [
+    RBracket,       // ]
+    Semicol,        // ;
+    Comparision,    // ==
+    Equals,         // =
+    Addition,       // +
+    Subtraction,    // - 
+    Multiplication, // *
+    Division,       // /
+    Bigger,         // >
+    BiggerOrEq,     // >=
+    Less,           // <
+    LessOrEq,       // <=
+    Modulo,         // %
+    Or,             // |
+    And,            // &
+    Xor,            // ^
+    BWLeftShift,    // <<
+    BWRightShift,   // >>
+    BWNot,          // ~
+    UNot,           // !
 }
-#[derive(Debug, PartialEq)]
-pub enum ParenKind {
-    LParen,   // (
-    RParen,   // )
-    LCurly,   // {
-    RCurly,   // }
-    LBracket, // [
-    RBracket, // ]
-}
-#[derive(Debug, PartialEq)]
-pub enum UnaryOperator {
-    BWNot,
-    UNot,
-}
-#[derive(Debug, PartialEq)]
-pub enum AssignmentOperator {
-    Equals,
-    PlusEquals,
-    MinusEquals,
-    MultEquals,
-    DivEquals,
-    BWLeftShiftEquals,
-    BWRightShiftEquals,
-    OrEquals,
-    AndEquals,
-    XorEquals,
-    ModuloEquals,
-}
-
-#[derive(Debug, PartialEq)]
-pub enum BinaryOperator {
-    Addition,
-    Subtraction,
-    Multiplication,
-    Division,
-    Bigger,
-    BiggerOrEq,
-    Less,
-    LessOrEq,
-    Modulo,
-    And,
-    Xor,
-    BWLeftShift,
-    BWRightShift,
-    Comparision,
-}
-impl KeywordKind {
-    // todo: use From<&str> trait
-    pub fn to_keyword(value: &str) -> Option<Self> {
+impl TryFrom<&str> for  KeywordKind {
+    type Error = ();
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
-            "if" => Some(KeywordKind::If),
-            "let" => Some(KeywordKind::Let),
-            "while" => Some(KeywordKind::While),
-            _ => None,
+            "if" => Ok(KeywordKind::If),
+            "let" => Ok(KeywordKind::Let),
+            "while" => Ok(KeywordKind::While),
+            _ => Err(()),
         }
     }
 }
-impl OperatorKind {
-    pub fn to_operator(op: &str) -> Option<Self> {
-        match op {
-            "<<=" => Some(Self::Assignment(AssignmentOperator::BWLeftShiftEquals)),
-            ">>=" => Some(Self::Assignment(AssignmentOperator::BWRightShiftEquals)),
-            "+=" => Some(Self::Assignment(AssignmentOperator::PlusEquals)),
-            "-=" => Some(Self::Assignment(AssignmentOperator::MinusEquals)),
-            "*=" => Some(Self::Assignment(AssignmentOperator::MultEquals)),
-            "/=" => Some(Self::Assignment(AssignmentOperator::DivEquals)),
-            "|=" => Some(Self::Assignment(AssignmentOperator::OrEquals)),
-            "&=" => Some(Self::Assignment(AssignmentOperator::AndEquals)),
-            "^=" => Some(Self::Assignment(AssignmentOperator::XorEquals)),
-            "%=" => Some(Self::Assignment(AssignmentOperator::ModuloEquals)),
-            ">=" => Some(Self::Binary(BinaryOperator::BiggerOrEq)),
-            "<=" => Some(Self::Binary(BinaryOperator::LessOrEq)),
-            "<<" => Some(Self::Binary(BinaryOperator::BWLeftShift)),
-            ">>" => Some(Self::Binary(BinaryOperator::BWRightShift)),
-            "==" => Some(Self::Binary(BinaryOperator::Comparision)),
-            "%" => Some(Self::Binary(BinaryOperator::Modulo)),
-            "&" => Some(Self::Binary(BinaryOperator::And)),
-            "|" => Some(Self::Binary(BinaryOperator::Xor)),
-            "+" => Some(Self::Binary(BinaryOperator::Addition)),
-            "-" => Some(Self::Binary(BinaryOperator::Subtraction)),
-            "*" => Some(Self::Binary(BinaryOperator::Multiplication)),
-            "/" => Some(Self::Binary(BinaryOperator::Division)),
-            "=" => Some(Self::Assignment(AssignmentOperator::Equals)),
-            "<" => Some(Self::Binary(BinaryOperator::Less)),
-            ">" => Some(Self::Binary(BinaryOperator::Bigger)),
-            "~" => Some(Self::Unary(UnaryOperator::BWNot)),
-            "!" => Some(Self::Unary(UnaryOperator::UNot)),
-            ";" => Some(Self::Semicol),
-            "(" => Some(Self::Paren(ParenKind::LParen)),
-            ")" => Some(Self::Paren(ParenKind::RParen)),
-            "{" => Some(Self::Paren(ParenKind::LCurly)),
-            "}" => Some(Self::Paren(ParenKind::RCurly)),
-            "[" => Some(Self::Paren(ParenKind::LBracket)),
-            "]" => Some(Self::Paren(ParenKind::RBracket)),
-            _ => None,
+impl TryFrom<&str> for OperatorKind {
+    type Error = ();
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "<=" => Ok(Self::LessOrEq),
+            "<<" => Ok(Self::BWLeftShift),
+            ">>" => Ok(Self::BWRightShift),
+            "==" => Ok(Self::Comparision),
+            "%" => Ok(Self::Modulo),
+            "&" => Ok(Self::And),
+            "|" => Ok(Self::Or),
+            "^" => Ok(Self::Xor),
+            "+" => Ok(Self::Addition),
+            "-" => Ok(Self::Subtraction),
+            "*" => Ok(Self::Multiplication),
+            "/" => Ok(Self::Division),
+            "=" => Ok(Self::Equals),
+            "<" => Ok(Self::Less),
+            ">" => Ok(Self::Bigger),
+            "~" => Ok(Self::BWNot),
+            "!" => Ok(Self::UNot),
+            ";" => Ok(Self::Semicol),
+            "(" => Ok(Self::LParen),
+            ")" => Ok(Self::RParen),
+            "{" => Ok(Self::LCurly),
+            "}" => Ok(Self::RCurly),
+            "[" => Ok(Self::LBracket),
+            "]" => Ok(Self::RBracket),
+            _ => Err(()),
         }
     }
 }

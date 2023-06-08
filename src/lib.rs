@@ -21,32 +21,18 @@ mod tests {
     }
     #[test]
     fn test_lexer() {
-        let mut tok_seq = InputFile::new(String::from("==<=|=%==<<="));
+        let mut tok_seq = InputFile::new(String::from("==<=|"));
         assert_eq!(
             next_token(&mut tok_seq).kind,
-            TokenKind::Operator(OperatorKind::Binary(BinaryOperator::Comparision))
+            TokenKind::Operator(OperatorKind::Comparision)
         );
         assert_eq!(
             next_token(&mut tok_seq).kind,
-            TokenKind::Operator(OperatorKind::Binary(BinaryOperator::LessOrEq))
+            TokenKind::Operator(OperatorKind::LessOrEq)
         );
         assert_eq!(
             next_token(&mut tok_seq).kind,
-            TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::OrEquals))
-        );
-        assert_eq!(
-            next_token(&mut tok_seq).kind,
-            TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::ModuloEquals))
-        );
-        assert_eq!(
-            next_token(&mut tok_seq).kind,
-            TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::Equals))
-        );
-        assert_eq!(
-            next_token(&mut tok_seq).kind,
-            TokenKind::Operator(OperatorKind::Assignment(
-                AssignmentOperator::BWLeftShiftEquals
-            ))
+            TokenKind::Operator(OperatorKind::Or)
         );
     }
 }

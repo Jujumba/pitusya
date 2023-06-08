@@ -15,7 +15,7 @@ pub fn parse(input: &mut InputFile) -> Result<Ast, String> {
         TokenKind::Keyword(KeywordKind::Let) => parse_let_expr(input),
         TokenKind::Identifier(_)
         | TokenKind::Literal(_)
-        | TokenKind::Operator(OperatorKind::Paren(ParenKind::LParen)) => {
+        | TokenKind::Operator(OperatorKind::LParen) => {
             input.move_back_cursor(t.len);
             parse_expression(input)
         }
@@ -30,11 +30,11 @@ pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
     let ast = match t.kind {
         TokenKind::Literal(_) => Ast::ValueNode(t),
         TokenKind::Identifier(i) => Ast::IdentifierNode(i),
-        TokenKind::Operator(OperatorKind::Paren(ParenKind::LParen)) => {
+        TokenKind::Operator(OperatorKind::LParen) => {
             let ast = Ast::UnitNode(Box::new(parse_expression(input)?));
             let t = next_token(input);
             match &t.kind {
-                TokenKind::Operator(OperatorKind::Paren(ParenKind::RParen)) => {
+                TokenKind::Operator(OperatorKind::RParen) => {
                     return Err("Unexpected `)`".to_string())
                 }
                 _ => {
@@ -47,8 +47,8 @@ pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
     };
     match next_token(input).kind {
         TokenKind::Operator(OperatorKind::Semicol)
-        | TokenKind::Operator(OperatorKind::Paren(ParenKind::RParen)) => Ok(ast),
-        TokenKind::Operator(op @ OperatorKind::Binary(_)) => Ok(Ast::BinaryNode {
+        | TokenKind::Operator(OperatorKind::RParen) => Ok(ast),
+        TokenKind::Operator(op) => Ok(Ast::BinaryNode {
             left: Box::new(ast),
             right: Box::new(parse_expression(input)?),
             op,
@@ -60,7 +60,7 @@ pub fn parse_let_expr(input: &mut InputFile) -> Result<Ast, String> {
     let assignee = next_token(input);
     match &assignee.kind {
         TokenKind::Identifier(_) => match next_token(input).kind {
-            TokenKind::Operator(OperatorKind::Assignment(AssignmentOperator::Equals)) => {
+            TokenKind::Operator(OperatorKind::Equals) => {
                 Ok(Ast::LetNode {
                     assignee: Box::new(Ast::ValueNode(assignee)),
                     value: Box::new(parse_expression(input)?),

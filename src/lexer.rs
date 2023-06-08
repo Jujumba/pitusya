@@ -22,17 +22,17 @@ lazy_static! {
         )),
         (Regex::new(r"[a-zA-Z0-9]+").unwrap(), Box::new(
             |s| {
-                match KeywordKind::to_keyword(s) {
-                    Some(keyword) => TokenKind::Keyword(keyword),
-                    None => TokenKind::Identifier(s.into())
+                match KeywordKind::try_from(s) {
+                    Ok(keyword) => TokenKind::Keyword(keyword),
+                    _ => TokenKind::Identifier(s.into())
                 }
             }
         )),
         (Regex::new(r"<<=|>>=|<=|>=|\+=|\-=|\*=|/=|\|=|\^=|&=|%=|==|<<|>>|=|\+|-|\*|/|%|&|\^|\||~|!|<|>|;|\(|\)|[|]|\{|\}").unwrap(), Box::new(
             |s| {
-                match OperatorKind::to_operator(s) {
-                    Some(operator) => TokenKind::Operator(operator),
-                    None => TokenKind::Undefined(s.chars().next().unwrap())
+                match OperatorKind::try_from(s) {
+                    Ok(operator) => TokenKind::Operator(operator),
+                    _ => TokenKind::Undefined(s.chars().next().unwrap())
                 }
             }
         ))
