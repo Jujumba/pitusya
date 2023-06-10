@@ -13,16 +13,11 @@ pub fn parse(input: &mut InputFile) -> Result<Ast, String> {
     let t = next_token(input);
     match &t.kind {
         TokenKind::Keyword(KeywordKind::Let) => parse_let_expr(input),
-        TokenKind::Identifier(_)
-        | TokenKind::Literal(_)
-        | TokenKind::Operator(OperatorKind::LParen) => {
+        TokenKind::Identifier(_) | TokenKind::Literal(_) | TokenKind::Operator(OperatorKind::LParen) => {
             input.move_back_cursor(t.len);
             parse_expression(input)
-        }
-        _ => Err(format!(
-            "Unexpected token at position {}",
-            input.get_cursor()
-        )),
+        },
+        _ => Err(format!("Unexpected token at position {}", input.get_cursor())),
     }
 }
 pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
@@ -34,33 +29,29 @@ pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
             let ast = Ast::UnitNode(Box::new(parse_expression(input)?));
             let t = next_token(input);
             match &t.kind {
-                TokenKind::Operator(OperatorKind::RParen) => {
-                    return Err("Unexpected `)`".to_string())
-                }
+                TokenKind::Operator(OperatorKind::RParen) => return Err("Unexpected `)`".to_string()),
                 _ => {
                     input.move_back_cursor(t.len);
                     ast
-                }
+                },
             }
-        }
+        },
         TokenKind::Operator(op @ OperatorKind::UNot) => {
             return Ok(Ast::UnaryNode {
                 value: Box::new(parse_expression(input)?),
                 op,
             });
-        }
+        },
         TokenKind::Operator(op @ OperatorKind::BWNot) => {
             return Ok(Ast::UnaryNode {
                 value: Box::new(parse_expression(input)?),
                 op,
             });
-        }
+        },
         e => return expect!("identifier or literal", e),
     };
     match next_token(input).kind {
-        TokenKind::Operator(OperatorKind::Semicol) | TokenKind::Operator(OperatorKind::RParen) => {
-            Ok(ast)
-        }
+        TokenKind::Operator(OperatorKind::Semicol) | TokenKind::Operator(OperatorKind::RParen) => Ok(ast),
         TokenKind::Operator(op) => Ok(Ast::BinaryNode {
             left: Box::new(ast),
             right: Box::new(parse_expression(input)?),
