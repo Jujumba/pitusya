@@ -24,7 +24,7 @@ pub enum OperatorKind {
     RBracket,       // ]
     Semicol,        // ;
     Comparision,    // ==
-    Equals,         // =
+    Assigment,      // =
     Addition,       // +
     Subtraction,    // -
     Multiplication, // *
@@ -70,7 +70,7 @@ impl TryFrom<&str> for OperatorKind {
             "-" => Ok(Self::Subtraction),
             "*" => Ok(Self::Multiplication),
             "/" => Ok(Self::Division),
-            "=" => Ok(Self::Equals),
+            "=" => Ok(Self::Assigment),
             "<" => Ok(Self::Less),
             ">" => Ok(Self::Bigger),
             "~" => Ok(Self::BWNot),
