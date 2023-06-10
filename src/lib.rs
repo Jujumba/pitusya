@@ -12,7 +12,8 @@ mod tests {
     #[should_panic]
     fn test_bad_input() {
         // requires a rethink of my lexer
-        assert!(false);
+        let mut bad = InputFile::new("1 = 1;".to_string());
+        parser::parse(&mut bad).unwrap();
     }
     #[test]
     fn test_let_expr() {
@@ -22,17 +23,8 @@ mod tests {
     #[test]
     fn test_lexer() {
         let mut tok_seq = InputFile::new(String::from("==<=|"));
-        assert_eq!(
-            next_token(&mut tok_seq).kind,
-            TokenKind::Operator(OperatorKind::Comparision)
-        );
-        assert_eq!(
-            next_token(&mut tok_seq).kind,
-            TokenKind::Operator(OperatorKind::LessOrEq)
-        );
-        assert_eq!(
-            next_token(&mut tok_seq).kind,
-            TokenKind::Operator(OperatorKind::Or)
-        );
+        assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::Comparision));
+        assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::LessOrEq));
+        assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::Or));
     }
 }
