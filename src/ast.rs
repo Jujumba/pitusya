@@ -1,20 +1,20 @@
 pub mod parser;
 
-use crate::lexer::tokens;
+use crate::lexer::tokens::*;
 
 #[derive(Debug, PartialEq)]
 pub enum Ast {
-    ValueNode(tokens::Token),
+    ValueNode(Token),
     IdentifierNode(String),
     UnitNode(Box<Ast>),
     UnaryNode {
         value: Box<Ast>,
-        op: tokens::OperatorKind,
+        op: OperatorKind,
     },
     BinaryNode {
         left: Box<Ast>,
         right: Box<Ast>,
-        op: tokens::OperatorKind,
+        op: OperatorKind,
     },
     LetNode {
         assignee: Box<Ast>,
