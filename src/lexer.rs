@@ -1,7 +1,8 @@
 pub mod tokens;
 
-use regex::Regex;
 use std::sync::OnceLock;
+
+use regex::Regex;
 use tokens::{KeywordKind, LiteralKind, NumType, OperatorKind, Token, TokenKind};
 
 use crate::input::InputFile;
@@ -39,7 +40,7 @@ pub fn next_token(input: &mut InputFile) -> Token {
     }
 }
 
-fn get_specification<'a>() -> &'a Vec<(Regex, Box<Handler>)> {
+fn get_specification() -> &'static Vec<(Regex, Box<Handler>)> {
     SPEC.get_or_init(|| {
         vec![
             (
