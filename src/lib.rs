@@ -4,7 +4,7 @@ pub mod lexer;
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::parser;
+    use crate::ast::{parser, Ast};
     use crate::input::InputFile;
     use crate::lexer::next_token;
     use crate::lexer::tokens::*;
@@ -25,5 +25,15 @@ mod tests {
         assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::Comparision));
         assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::LessOrEq));
         assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::Or));
+    }
+    #[test]
+    fn test_while_expression_parsing() {
+        let mut input = InputFile::new(String::from(
+            "while 1 == 1; {
+            let hello = \"world\";
+        }",
+        ));
+        let ast = parser::parse(&mut input).unwrap();
+        assert!(matches!(ast, Ast::WhileNode { .. }));
     }
 }
