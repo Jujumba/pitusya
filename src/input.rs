@@ -18,11 +18,11 @@ impl InputFile {
     }
     #[inline]
     pub fn move_cursor(&self, n: usize) {
-        self.cursor.replace(n);
+        self.cursor.replace(self.get_cursor() + n);
     }
     #[inline]
     pub fn move_back_cursor(&self, n: usize) {
-        self.cursor.replace(n);
+        self.cursor.replace(self.get_cursor() - n);
     }
     #[inline]
     pub fn get_cursor(&self) -> usize {
