@@ -17,6 +17,25 @@ pub fn parse(input: &mut InputFile) -> Result<Ast, String> {
             input.move_back_cursor(t.len);
             parse_expression(input)
         },
+        TokenKind::Keyword(KeywordKind::While) => {
+            let condition = Box::new(parse_expression(input)?);
+            let curly = next_token(input);
+            if matches!(curly.kind, TokenKind::Operator(OperatorKind::LCurly)) {
+                let mut curly = next_token(input);
+                let mut body = vec![];
+                while !matches!(curly.kind, TokenKind::Operator(OperatorKind::RCurly)) {
+                    input.move_back_cursor(curly.len);
+                    body.push(Box::new(parse(input)?));
+                    curly = next_token(input);
+                    if curly.kind == TokenKind::EOF {
+                        return expect!("`}`", curly);
+                    }
+                }
+                Ok(Ast::WhileNode { condition, body })
+            } else {
+                expect!("`}`", curly)
+            }
+        },
         _ => Err(format!("Unexpected token at position {}", input.get_cursor())),
     }
 }
