@@ -6,3 +6,5 @@ newline_style = "Unix"
 trailing_comma = "Vertical"
 match_block_trailing_comma = true
 max_width = 140
+use_field_init_shorthand = true
+struct_variant_width = 15
