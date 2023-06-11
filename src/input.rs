@@ -29,6 +29,9 @@ impl InputFile {
         *self.cursor.borrow()
     }
     pub fn skip_spaces(&mut self) {
+        if self.out_of_bounds() {
+            return;
+        }
         while !self.out_of_bounds() && self.current_char().is_whitespace() {
             self.move_cursor(1);
         }

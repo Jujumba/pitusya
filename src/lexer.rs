@@ -12,13 +12,13 @@ type Handler = dyn Fn(&str) -> TokenKind + Sync + Send;
 static SPEC: OnceLock<Vec<(Regex, Box<Handler>)>> = OnceLock::new();
 
 pub fn next_token(input: &mut InputFile) -> Token {
+    input.skip_spaces();
     if input.out_of_bounds() {
         return Token {
             kind: TokenKind::EOF,
             len: 0,
         };
     }
-    input.skip_spaces();
     let content = input.get_str();
     let curs = input.get_cursor();
     for (regex, closure) in get_specification().iter() {
