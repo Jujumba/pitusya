@@ -56,7 +56,7 @@ pub fn next_token(input: &mut InputFile) -> Token {
                 input.move_cursor(len);
                 let kind = closure(m.as_str());
                 return Token { kind, len };
-            }
+            },
             _ => (),
         }
     }
