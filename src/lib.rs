@@ -11,7 +11,6 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_bad_input() {
-        // requires a rethink of my lexer
         let mut bad = InputFile::new("1 = 1;".to_string());
         parser::parse(&mut bad).unwrap();
     }
