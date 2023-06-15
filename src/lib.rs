@@ -9,7 +9,7 @@ mod tests {
     use crate::lexer::next_token;
     use crate::lexer::tokens::*;
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "Expected an identifier, but got a const-value")]
     fn test_bad_input() {
         let mut bad = InputFile::new("1 = 1;".to_string());
         parser::parse(&mut bad).unwrap();

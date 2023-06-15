@@ -76,7 +76,7 @@ pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
     match next_token(input).kind {
         TokenKind::Operator(OperatorKind::Semicol) | TokenKind::Operator(OperatorKind::RParen) => Ok(ast),
         TokenKind::Operator(OperatorKind::Assigment) if matches!(&ast, Ast::ValueNode(_)) => {
-            Err("Expected an identfier, but got a const-value".to_string())
+            Err("Expected an identifier, but got a const-value".to_string())
         },
         TokenKind::Operator(op) => Ok(Ast::BinaryNode {
             left: Box::new(ast),
