@@ -17,7 +17,7 @@ pub fn parse(input: &mut InputFile) -> Result<Ast, String> {
             input.move_back_cursor(t.len);
             parse_expression(input)
         },
-        TokenKind::Keyword(KeywordKind::While) => {
+        TokenKind::Keyword(KeywordKind::If) | TokenKind::Keyword(KeywordKind::While) => {
             let condition = Box::new(parse_expression(input)?);
             let curly = next_token(input);
             if matches!(curly.kind, TokenKind::Operator(OperatorKind::LCurly)) {
@@ -31,7 +31,11 @@ pub fn parse(input: &mut InputFile) -> Result<Ast, String> {
                         return expect!("`}`", curly);
                     }
                 }
-                Ok(Ast::WhileNode { condition, body })
+                Ok(if matches!(t.kind, TokenKind::Keyword(KeywordKind::While)) {
+                    Ast::WhileNode { condition, body }
+                } else {
+                    Ast::IfNode { condition, body }
+                })
             } else {
                 expect!("`}`", curly)
             }
