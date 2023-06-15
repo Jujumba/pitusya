@@ -36,4 +36,14 @@ mod tests {
         let ast = parser::parse(&mut input).unwrap();
         assert!(matches!(ast, Ast::WhileNode { .. }));
     }
+    #[test]
+    fn test_if_expression_parsing() {
+        let mut input = InputFile::new(String::from(
+            "if 1 == 2; {
+                let wow = \"uWu\";
+            }",
+        ));
+        let ast = parser::parse(&mut input).unwrap();
+        assert!(matches!(ast, Ast::IfNode { .. }))
+    }
 }
