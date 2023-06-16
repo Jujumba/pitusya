@@ -40,6 +40,8 @@ pub fn parse(input: &mut InputFile) -> Result<Ast, String> {
                 expect!("`}`", curly)
             }
         },
+        TokenKind::EOF => Ok(Ast::EOF),
+        TokenKind::Operator(OperatorKind::Semicol) => Ok(parse(input)?),
         _ => Err(format!("Unexpected token at position {}", input.get_cursor())),
     }
 }
