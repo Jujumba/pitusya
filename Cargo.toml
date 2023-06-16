@@ -8,4 +8,5 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
+llvm-sys = "160.1.2"
 regex = "1.8.3"
