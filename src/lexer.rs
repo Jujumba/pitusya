@@ -3,7 +3,7 @@ pub mod tokens;
 use std::sync::OnceLock;
 
 use regex::Regex;
-use tokens::{KeywordKind, LiteralKind, NumType, OperatorKind, Token, TokenKind};
+use tokens::{KeywordKind, LiteralKind, OperatorKind, Token, TokenKind};
 
 use crate::input::InputFile;
 
@@ -45,7 +45,7 @@ fn get_specification() -> &'static Vec<(Regex, Box<Handler>)> {
         vec![
             (
                 Regex::new(r"[0-9]+").unwrap(),
-                Box::new(|s| TokenKind::Literal(LiteralKind::Num(NumType::Int(s.parse().unwrap())))),
+                Box::new(|s| TokenKind::Literal(LiteralKind::Num(s.parse().unwrap()))),
             ),
             (
                 Regex::new("\"[a-zA-Z0-0]+\"").unwrap(),

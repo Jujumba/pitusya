@@ -96,12 +96,6 @@ pub enum KeywordKind {
 
 #[derive(Debug, PartialEq)]
 pub enum LiteralKind {
-    Num(NumType),
+    Num(f64),
     Str(String),
-}
-
-#[derive(Debug, PartialEq)]
-pub enum NumType {
-    Int(i64),
-    Float(f64),
 }
