@@ -17,6 +17,18 @@ void PITUSYAPreInit() {
 void PITUSYAPostDestroy() {
     LLVMContextDispose(CONTEXT);
 }
+static LLVMValueRef PITUSYAGetAnonExpr(
+    LLVMValueRef(*p)(LLVMBuilderRef, LLVMValueRef,LLVMValueRef, const char*),
+    LLVMValueRef lhs,
+    LLVMValueRef rhs,
+    const char* name
+    ) {
+    LLVMValueRef anon = LLVMAddFunction(MODULE, "__anon_expr", LLVMFunctionType(LLVMDoubleTypeInContext(CONTEXT), NULL, 0, 0));
+    LLVMBasicBlockRef entryBlock = LLVMAppendBasicBlockInContext(CONTEXT, anon, "entry");
+    LLVMPositionBuilderAtEnd(BUILDER, entryBlock);
+    LLVMBuildRet(BUILDER, p(BUILDER, lhs, rhs, name));
+    return anon;
+}
 LLVMValueRef PITUSYAGenerateFP(double n) {
     return LLVMConstReal(LLVMDoubleTypeInContext(CONTEXT), n);
 }
@@ -24,16 +36,16 @@ LLVMValueRef PITUSYAGenerateString(char* s) {
     return LLVMConstString(s, strlen(s), 0);
 }
 LLVMValueRef PITUSYABuildAdd(LLVMValueRef lhs, LLVMValueRef rhs) {
-    return LLVMBuildAdd(BUILDER, lhs, rhs, "addtmp");
+    return PITUSYAGetAnonExpr(LLVMBuildFAdd, lhs, rhs, "addtmp");
 }
 LLVMValueRef PITUSYABuildMul(LLVMValueRef lhs, LLVMValueRef rhs) {
-    return LLVMBuildMul(BUILDER, lhs, rhs, "multpm");
+    return PITUSYAGetAnonExpr(LLVMBuildFMul, lhs, rhs, "addtmp");
 }
 LLVMValueRef PITUSYABuildSub(LLVMValueRef lhs, LLVMValueRef rhs) {
-    return LLVMBuildSub(BUILDER, lhs, rhs, "subtmp");
+    return PITUSYAGetAnonExpr(LLVMBuildSub, lhs, rhs, "addtmp");
 }
 LLVMValueRef PITUSYABuildDiv(LLVMValueRef lhs, LLVMValueRef rhs) {
-    return LLVMBuildMul(BUILDER, lhs, rhs, "divtmp");
+    return PITUSYAGetAnonExpr(LLVMBuildFDiv, lhs, rhs, "addtmp");
 }
 void PITUSYAPrintIR(LLVMValueRef ir) {
     char* s = LLVMPrintValueToString(ir);
