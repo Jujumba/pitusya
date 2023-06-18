@@ -4,6 +4,8 @@
 #include <llvm-c/Target.h>
 #include "llvm-c/Core.h"
 
+typedef LLVMValueRef(*LLVMFunction)(LLVMBuilderRef, LLVMValueRef,LLVMValueRef, const char*);
+
 LLVMContextRef CONTEXT = NULL;
 LLVMModuleRef MODULE = NULL;
 LLVMBuilderRef BUILDER = NULL;
@@ -17,12 +19,7 @@ void PITUSYAPreInit() {
 void PITUSYAPostDestroy() {
     LLVMContextDispose(CONTEXT);
 }
-static LLVMValueRef PITUSYAGetAnonExpr(
-    LLVMValueRef(*p)(LLVMBuilderRef, LLVMValueRef,LLVMValueRef, const char*),
-    LLVMValueRef lhs,
-    LLVMValueRef rhs,
-    const char* name
-    ) {
+static LLVMValueRef PITUSYAGetAnonExpr(LLVMFunction p, LLVMValueRef lhs, LLVMValueRef rhs, const char* name) {
     LLVMValueRef anon = LLVMAddFunction(MODULE, "__anon_expr", LLVMFunctionType(LLVMDoubleTypeInContext(CONTEXT), NULL, 0, 0));
     LLVMBasicBlockRef entryBlock = LLVMAppendBasicBlockInContext(CONTEXT, anon, "entry");
     LLVMPositionBuilderAtEnd(BUILDER, entryBlock);
