@@ -36,13 +36,13 @@ LLVMValueRef PITUSYABuildAdd(LLVMValueRef lhs, LLVMValueRef rhs) {
     return PITUSYAGetAnonExpr(LLVMBuildFAdd, lhs, rhs, "addtmp");
 }
 LLVMValueRef PITUSYABuildMul(LLVMValueRef lhs, LLVMValueRef rhs) {
-    return PITUSYAGetAnonExpr(LLVMBuildFMul, lhs, rhs, "addtmp");
+    return PITUSYAGetAnonExpr(LLVMBuildFMul, lhs, rhs, "multmp");
 }
 LLVMValueRef PITUSYABuildSub(LLVMValueRef lhs, LLVMValueRef rhs) {
-    return PITUSYAGetAnonExpr(LLVMBuildSub, lhs, rhs, "addtmp");
+    return PITUSYAGetAnonExpr(LLVMBuildSub, lhs, rhs, "subtmp");
 }
 LLVMValueRef PITUSYABuildDiv(LLVMValueRef lhs, LLVMValueRef rhs) {
-    return PITUSYAGetAnonExpr(LLVMBuildFDiv, lhs, rhs, "addtmp");
+    return PITUSYAGetAnonExpr(LLVMBuildFDiv, lhs, rhs, "divtmp");
 }
 void PITUSYAPrintIR(LLVMValueRef ir) {
     char* s = LLVMPrintValueToString(ir);
