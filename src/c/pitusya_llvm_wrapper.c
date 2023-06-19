@@ -17,6 +17,8 @@ void PITUSYAPreInit() {
     BUILDER = LLVMCreateBuilderInContext(CONTEXT);
 }
 void PITUSYAPostDestroy() {
+    LLVMDisposeBuilder(BUILDER);
+    LLVMDisposeModule(MODULE);
     LLVMContextDispose(CONTEXT);
 }
 static LLVMValueRef PITUSYAGetAnonExpr(LLVMFunction p, LLVMValueRef lhs, LLVMValueRef rhs, const char* name) {
