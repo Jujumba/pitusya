@@ -9,6 +9,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Install LLVM
+      run: |
+        sudo apt-get update
+        sudo apt-get install llvm
+
+    - name: Install Clang
+      run: sudo apt-get install clang
+
     - name: Update Rust
       run: rustup update stable
 
