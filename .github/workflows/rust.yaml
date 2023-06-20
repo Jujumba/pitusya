@@ -11,13 +11,13 @@ jobs:
 
     - name: Install LLVM
       run: |
-      sudo apt update
-      sudo apt install llvm-16-dev
+        sudo apt update
+        sudo apt install llvm-16-dev
 
     - name: Install Clang
       run: |
-      sudo apt update 
-      sudo apt install clang
+        sudo apt update 
+        sudo apt install clang
 
     - name: Update Rust
       run: rustup update stable
