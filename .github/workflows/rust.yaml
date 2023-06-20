@@ -11,7 +11,7 @@ jobs:
 
     - name: Install LLVM
       run: |
-        sudo apt update
+        sudo apt-add-repository --yes "http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main"
         sudo apt install llvm-16-dev
 
     - name: Install Clang
