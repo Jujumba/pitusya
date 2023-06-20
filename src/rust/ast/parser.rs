@@ -61,18 +61,6 @@ pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
                 },
             }
         },
-        TokenKind::Operator(op @ OperatorKind::UNot) => {
-            return Ok(Ast::UnaryNode {
-                value: Box::new(parse_expression(input)?),
-                op,
-            });
-        },
-        TokenKind::Operator(op @ OperatorKind::BWNot) => {
-            return Ok(Ast::UnaryNode {
-                value: Box::new(parse_expression(input)?),
-                op,
-            });
-        },
         e => return expect!("identifier or literal", e),
     };
     match next_token(input).kind {
