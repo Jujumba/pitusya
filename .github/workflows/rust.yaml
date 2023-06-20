@@ -11,6 +11,9 @@ jobs:
     - name: Update APT index
       run: sudo apt update
 
+    - name: Update APT index
+      run: sudo apt update
+
     - name: Install LLVM
       run: sudo apt install llvm-16-dev
 
