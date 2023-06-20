@@ -34,9 +34,6 @@ pub enum OperatorKind {
     Less,           // <
     LessOrEq,       // <=
     Modulo,         // %
-    Or,             // |
-    And,            // &
-    Xor,            // ^
     BWLeftShift,    // <<
     BWRightShift,   // >>
     BWNot,          // ~
@@ -63,9 +60,6 @@ impl TryFrom<&str> for OperatorKind {
             ">>" => Ok(Self::BWRightShift),
             "==" => Ok(Self::Comparision),
             "%" => Ok(Self::Modulo),
-            "&" => Ok(Self::And),
-            "|" => Ok(Self::Or),
-            "^" => Ok(Self::Xor),
             "+" => Ok(Self::Addition),
             "-" => Ok(Self::Subtraction),
             "*" => Ok(Self::Multiplication),

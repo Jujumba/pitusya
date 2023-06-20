@@ -1,4 +1,5 @@
 pub mod ast;
+pub mod codegen;
 pub mod input;
 pub mod lexer;
 
@@ -24,7 +25,7 @@ mod tests {
         let mut tok_seq = InputFile::new(String::from("==<=|"));
         assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::Comparision));
         assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::LessOrEq));
-        assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::Or));
+        assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Undefined('|'));
     }
     #[test]
     fn test_while_expression_parsing() {
