@@ -33,9 +33,6 @@ pub enum OperatorKind {
     BiggerOrEq,     // >=
     Less,           // <
     LessOrEq,       // <=
-    Modulo,         // %
-    BWLeftShift,    // <<
-    BWRightShift,   // >>
     BWNot,          // ~
     UNot,           // !
 }
@@ -56,10 +53,7 @@ impl TryFrom<&str> for OperatorKind {
         match value {
             "<=" => Ok(Self::LessOrEq),
             ">=" => Ok(Self::BiggerOrEq),
-            "<<" => Ok(Self::BWLeftShift),
-            ">>" => Ok(Self::BWRightShift),
             "==" => Ok(Self::Comparision),
-            "%" => Ok(Self::Modulo),
             "+" => Ok(Self::Addition),
             "-" => Ok(Self::Subtraction),
             "*" => Ok(Self::Multiplication),
@@ -67,8 +61,6 @@ impl TryFrom<&str> for OperatorKind {
             "=" => Ok(Self::Assigment),
             "<" => Ok(Self::Less),
             ">" => Ok(Self::Bigger),
-            "~" => Ok(Self::BWNot),
-            "!" => Ok(Self::UNot),
             ";" => Ok(Self::Semicol),
             "(" => Ok(Self::LParen),
             ")" => Ok(Self::RParen),
