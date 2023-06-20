@@ -12,7 +12,7 @@ jobs:
     - name: Install LLVM
       run: |
         sudo apt-get update
-        sudo apt-get install llvm
+        sudo apt-get install llvm-16-dev
 
     - name: Install Clang
       run: sudo apt-get install clang
