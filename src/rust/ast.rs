@@ -18,7 +18,7 @@ pub enum Ast {
         op: OperatorKind,
     },
     LetNode {
-        assignee: Box<Ast>,
+        assignee: String,
         value: Box<Ast>,
     },
     IfNode {

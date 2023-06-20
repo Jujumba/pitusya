@@ -89,11 +89,11 @@ pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
     }
 }
 pub fn parse_let_expr(input: &mut InputFile) -> Result<Ast, String> {
-    let assignee = next_token(input);
-    match &assignee.kind {
-        TokenKind::Identifier(_) => match next_token(input).kind {
+    let token = next_token(input);
+    match token.kind {
+        TokenKind::Identifier(assignee) => match next_token(input).kind {
             TokenKind::Operator(OperatorKind::Assigment) => Ok(Ast::LetNode {
-                assignee: Box::new(Ast::ValueNode(assignee)),
+                assignee,
                 value: Box::new(parse_expression(input)?),
             }),
             e => expect!("=", e),
