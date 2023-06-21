@@ -44,7 +44,7 @@ fn get_specification() -> &'static Vec<(Regex, Box<Handler>)> {
     SPEC.get_or_init(|| {
         vec![
             (
-                Regex::new(r"[0-9]+").unwrap(),
+                Regex::new(r"([0-9]*[.])?[0-9]+").unwrap(),
                 Box::new(|s| TokenKind::Literal(LiteralKind::Num(s.parse().unwrap()))),
             ),
             (
