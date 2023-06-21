@@ -48,7 +48,7 @@ pub fn parse(input: &mut InputFile) -> Result<Ast, String> {
 pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
     let t = next_token(input);
     let ast = match t.kind {
-        TokenKind::Literal(_) => Ast::ValueNode(t),
+        TokenKind::Literal(l) => Ast::ValueNode(l),
         TokenKind::Identifier(i) => Ast::IdentifierNode(i),
         TokenKind::Operator(OperatorKind::LParen) => {
             let ast = Ast::UnitNode(Box::new(parse_expression(input)?));

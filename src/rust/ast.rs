@@ -5,7 +5,7 @@ use crate::lexer::tokens::*;
 #[derive(Debug, PartialEq)]
 pub enum Ast {
     EOF,
-    ValueNode(Token),
+    ValueNode(LiteralKind),
     IdentifierNode(String),
     UnitNode(Box<Ast>),
     BinaryNode {
