@@ -1,15 +1,10 @@
+use crate::abort_compilation;
 use crate::ast::Ast;
 use crate::input::InputFile;
 use crate::lexer::next_token;
 use crate::lexer::tokens::*;
 
-macro_rules! expect {
-    ($expected: expr, $e: expr) => {
-        Err(format!("Expected {}, but got {:?}", $expected, $e))
-    };
-}
-
-pub fn parse(input: &mut InputFile) -> Result<Ast, String> {
+pub fn parse(input: &mut InputFile) -> Ast {
     let t = next_token(input);
     match &t.kind {
         TokenKind::Keyword(KeywordKind::Let) => parse_let_expr(input),
@@ -18,74 +13,86 @@ pub fn parse(input: &mut InputFile) -> Result<Ast, String> {
             parse_expression(input)
         },
         TokenKind::Keyword(KeywordKind::If) | TokenKind::Keyword(KeywordKind::While) => {
-            let condition = Box::new(parse_expression(input)?);
+            let condition = Box::new(parse_expression(input));
             let curly = next_token(input);
             if matches!(curly.kind, TokenKind::Operator(OperatorKind::LCurly)) {
                 let mut curly = next_token(input);
                 let mut body = vec![];
                 while !matches!(curly.kind, TokenKind::Operator(OperatorKind::RCurly)) {
                     input.move_back_cursor(curly.len);
-                    body.push(Box::new(parse(input)?));
+                    body.push(Box::new(parse(input)));
                     curly = next_token(input);
                     if curly.kind == TokenKind::EOF {
-                        return expect!("`}`", curly);
+                        abort_compilation!(format!("Expected `}}`, but got {:?}", curly));
                     }
                 }
-                Ok(if matches!(t.kind, TokenKind::Keyword(KeywordKind::While)) {
+                if matches!(t.kind, TokenKind::Keyword(KeywordKind::While)) {
                     Ast::WhileNode { condition, body }
                 } else {
                     Ast::IfNode { condition, body }
-                })
+                }
             } else {
-                expect!("`}`", curly)
+                abort_compilation!(format!("Expected `}}`, but got {:?}", curly));
             }
         },
-        TokenKind::EOF => Ok(Ast::EOF),
-        TokenKind::Operator(OperatorKind::Semicol) => Ok(parse(input)?),
-        _ => Err(format!("Unexpected token at position {}", input.get_cursor())),
+        TokenKind::EOF => Ast::EOF,
+        TokenKind::Operator(OperatorKind::Semicol) => parse(input),
+        _ => {
+            abort_compilation!(format!("Unexpected token at position {}", input.get_cursor()));
+        }
     }
 }
-pub fn parse_expression(input: &mut InputFile) -> Result<Ast, String> {
+pub fn parse_expression(input: &mut InputFile) -> Ast {
     let t = next_token(input);
     let ast = match t.kind {
         TokenKind::Literal(l) => Ast::ValueNode(l),
         TokenKind::Identifier(i) => Ast::IdentifierNode(i),
         TokenKind::Operator(OperatorKind::LParen) => {
-            let ast = Ast::UnitNode(Box::new(parse_expression(input)?));
+            let ast = Ast::UnitNode(Box::new(parse_expression(input)));
             let t = next_token(input);
             match &t.kind {
-                TokenKind::Operator(OperatorKind::RParen) => return Err("Unexpected `)`".to_string()),
+                TokenKind::Operator(OperatorKind::RParen) => {
+                    abort_compilation!("Unexpected `(`");
+                }
                 _ => {
                     input.move_back_cursor(t.len);
                     ast
                 },
             }
         },
-        e => return expect!("identifier or literal", e),
+        e => {
+            abort_compilation!(format!("Expected identifier or literal, but got {:?}", e));
+        }
     };
     match next_token(input).kind {
-        TokenKind::Operator(OperatorKind::Semicol) | TokenKind::Operator(OperatorKind::RParen) => Ok(ast),
+        TokenKind::Operator(OperatorKind::Semicol) | TokenKind::Operator(OperatorKind::RParen) => ast,
         TokenKind::Operator(OperatorKind::Assigment) if matches!(&ast, Ast::ValueNode(_)) => {
-            Err("Expected an identifier, but got a const-value".to_string())
+            abort_compilation!("Expected an identifier, but got a const-value");
         },
-        TokenKind::Operator(op) => Ok(Ast::BinaryNode {
+        TokenKind::Operator(op) => Ast::BinaryNode {
             left: Box::new(ast),
-            right: Box::new(parse_expression(input)?),
+            right: Box::new(parse_expression(input)),
             op,
-        }),
-        e => expect!("operator or semicolon", e),
+        },
+        e => {
+            abort_compilation!(format!("Expected operator or semicolon, but got {:?}", e));
+        }
     }
 }
-pub fn parse_let_expr(input: &mut InputFile) -> Result<Ast, String> {
+pub fn parse_let_expr(input: &mut InputFile) -> Ast {
     let token = next_token(input);
     match token.kind {
         TokenKind::Identifier(assignee) => match next_token(input).kind {
-            TokenKind::Operator(OperatorKind::Assigment) => Ok(Ast::LetNode {
+            TokenKind::Operator(OperatorKind::Assigment) => Ast::LetNode {
                 assignee,
-                value: Box::new(parse_expression(input)?),
-            }),
-            e => expect!("=", e),
+                value: Box::new(parse_expression(input)),
+            },
+            e => {
+                abort_compilation!(format!("Expected `=`, but got {:?}", e));
+            }
         },
-        e => expect!("identifier", e),
+            e => {
+                abort_compilation!(format!("Expected identifier, but got {:?}", e));
+            }
     }
 }

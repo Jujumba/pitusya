@@ -3,6 +3,14 @@ pub mod codegen;
 pub mod input;
 pub mod lexer;
 
+#[macro_export]
+macro_rules! abort_compilation {
+    ($msg:expr) => {
+        eprintln!("Compilation error:\n\t{}", $msg);
+        std::process::exit(18)
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use crate::ast::{parser, Ast};
@@ -13,12 +21,12 @@ mod tests {
     #[should_panic(expected = "Expected an identifier, but got a const-value")]
     fn test_bad_input() {
         let mut bad = InputFile::new("1 = 1;".to_string());
-        parser::parse(&mut bad).unwrap();
+        parser::parse(&mut bad);
     }
     #[test]
     fn test_let_expr() {
         let mut parse = InputFile::new("let pitusya = \"cool\";".to_string());
-        parser::parse(&mut parse).unwrap();
+        parser::parse(&mut parse);
     }
     #[test]
     fn test_lexer() {
@@ -34,7 +42,7 @@ mod tests {
             let hello = \"world\";
         }",
         ));
-        let ast = parser::parse(&mut input).unwrap();
+        let ast = parser::parse(&mut input);
         assert!(matches!(ast, Ast::WhileNode { .. }));
     }
     #[test]
@@ -44,7 +52,7 @@ mod tests {
                 let wow = \"uWu\";
             }",
         ));
-        let ast = parser::parse(&mut input).unwrap();
+        let ast = parser::parse(&mut input);
         assert!(matches!(ast, Ast::IfNode { .. }))
     }
 }
