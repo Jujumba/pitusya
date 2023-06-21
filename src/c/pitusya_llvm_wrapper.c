@@ -31,8 +31,8 @@ static LLVMValueRef PITUSYAGetAnonExpr(LLVMFunction p, LLVMValueRef lhs, LLVMVal
 LLVMValueRef PITUSYAGenerateFP(double n) {
     return LLVMConstReal(LLVMDoubleTypeInContext(CONTEXT), n);
 }
-LLVMValueRef PITUSYAGenerateString(char* s) {
-    return LLVMConstString(s, strlen(s), 0);
+LLVMValueRef PITUSYAGenerateString(char* s, size_t len) {
+    return LLVMConstString(s, len, 0);
 }
 LLVMValueRef PITUSYABuildAdd(LLVMValueRef lhs, LLVMValueRef rhs) {
     return PITUSYAGetAnonExpr(LLVMBuildFAdd, lhs, rhs, "addtmp");
