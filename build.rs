@@ -14,10 +14,19 @@ fn main() {
         .expect("Build error: LLVM is not installed!");
     let llvm_flags = String::from_utf8(llvm_flags_process.stdout).unwrap();
 
+    let llvm_includedir = String::from_utf8(Command::new("llvm-config")
+        .args(["--includedir"])
+        .output()
+        .expect("")
+        .stdout
+    ).unwrap();
+    let llvm_includedir = llvm_includedir.trim();
+    
     cc::Build::new()
         .compiler("clang")
         .flag("-c")
         .flag(&llvm_flags)
+        .include(llvm_includedir)
         .file("src/c/pitusya_llvm_wrapper.c")
         .compile("libpitusya_llvm_wrapper");
     println!("cargo:rustc-link-lib=libpitusya_llvm_wrapper");
