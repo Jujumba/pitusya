@@ -33,8 +33,6 @@ pub enum OperatorKind {
     BiggerOrEq,     // >=
     Less,           // <
     LessOrEq,       // <=
-    BWNot,          // ~
-    UNot,           // !
 }
 impl TryFrom<&str> for KeywordKind {
     type Error = ();
