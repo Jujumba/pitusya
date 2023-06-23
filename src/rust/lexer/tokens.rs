@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq)]
 pub struct Token {
     pub kind: TokenKind,
-    pub len: usize,
+    pub len: usize
 }
 
 #[derive(Debug, PartialEq)]
@@ -11,20 +11,20 @@ pub enum TokenKind {
     Literal(LiteralKind),
     Identifier(String),
     Undefined(char), // For unrecognised characters, such as $ or @
-    EOF,
+    EOF
 }
 
 #[derive(Debug, PartialEq)]
 pub enum OperatorKind {
-    LParen,         // (
-    RParen,         // )
-    LCurly,         // {
-    RCurly,         // }
-    LBracket,       // [
-    RBracket,       // ]
-    Semicol,        // ;
-    Assigment,      // =
-    Binary(BinaryOperatorKind),
+    LParen,    // (
+    RParen,    // )
+    LCurly,    // {
+    RCurly,    // }
+    LBracket,  // [
+    RBracket,  // ]
+    Semicol,   // ;
+    Assigment, // =
+    Binary(BinaryOperatorKind)
 }
 #[derive(Debug, PartialEq)]
 pub enum BinaryOperatorKind {
@@ -36,7 +36,7 @@ pub enum BinaryOperatorKind {
     Bigger,         // >
     BiggerOrEq,     // >=
     Less,           // <
-    LessOrEq,       // <=
+    LessOrEq        // <=
 }
 impl TryFrom<&str> for KeywordKind {
     type Error = ();
@@ -45,7 +45,7 @@ impl TryFrom<&str> for KeywordKind {
             "if" => Ok(KeywordKind::If),
             "let" => Ok(KeywordKind::Let),
             "while" => Ok(KeywordKind::While),
-            _ => Err(()),
+            _ => Err(())
         }
     }
 }
@@ -70,7 +70,7 @@ impl TryFrom<&str> for OperatorKind {
             "}" => Ok(Self::RCurly),
             "[" => Ok(Self::LBracket),
             "]" => Ok(Self::RBracket),
-            _ => Err(()),
+            _ => Err(())
         }
     }
 }
@@ -79,11 +79,11 @@ impl TryFrom<&str> for OperatorKind {
 pub enum KeywordKind {
     If,
     Let,
-    While,
+    While
 }
 
 #[derive(Debug, PartialEq)]
 pub enum LiteralKind {
     Num(f64),
-    Str(String),
+    Str(String)
 }

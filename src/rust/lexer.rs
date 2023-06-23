@@ -16,7 +16,7 @@ pub fn next_token(input: &mut InputFile) -> Token {
     if input.out_of_bounds() {
         return Token {
             kind: TokenKind::EOF,
-            len: 0,
+            len: 0
         };
     }
     let content = input.get_str();
@@ -28,15 +28,15 @@ pub fn next_token(input: &mut InputFile) -> Token {
                 input.move_cursor(len);
                 let kind = closure(m.as_str());
                 return Token { kind, len };
-            },
-            _ => (),
+            }
+            _ => ()
         }
     }
     let c = input.current_char();
     input.move_cursor(1);
     Token {
         kind: TokenKind::Undefined(c),
-        len: 1,
+        len: 1
     }
 }
 
@@ -45,25 +45,25 @@ fn get_specification() -> &'static Vec<(Regex, Box<Handler>)> {
         vec![
             (
                 Regex::new(r"([0-9]*[.])?[0-9]+").unwrap(),
-                Box::new(|s| TokenKind::Literal(LiteralKind::Num(s.parse().unwrap()))),
+                Box::new(|s| TokenKind::Literal(LiteralKind::Num(s.parse().unwrap())))
             ),
             (
                 Regex::new("\"[a-zA-Z0-0]+\"").unwrap(),
-                Box::new(|s| TokenKind::Literal(LiteralKind::Str(s.into()))),
+                Box::new(|s| TokenKind::Literal(LiteralKind::Str(s.into())))
             ),
             (
                 Regex::new(r"[a-zA-Z0-9]+").unwrap(),
                 Box::new(|s| match KeywordKind::try_from(s) {
                     Ok(keyword) => TokenKind::Keyword(keyword),
-                    _ => TokenKind::Identifier(s.into()),
-                }),
+                    _ => TokenKind::Identifier(s.into())
+                })
             ),
             (
                 Regex::new(r"<=|>=|==|=|\+|-|\*|/|<|>|;|\(|\)|\{|\}").unwrap(),
                 Box::new(|s| match OperatorKind::try_from(s) {
                     Ok(operator) => TokenKind::Operator(operator),
-                    _ => TokenKind::Undefined(s.chars().next().unwrap()),
-                }),
+                    _ => TokenKind::Undefined(s.chars().next().unwrap())
+                })
             ),
         ]
     })

@@ -31,8 +31,14 @@ mod tests {
     #[test]
     fn test_lexer() {
         let mut tok_seq = InputFile::new(String::from("==<=|"));
-        assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::Binary(BinaryOperatorKind::Comparision)));
-        assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::Binary(BinaryOperatorKind::LessOrEq)));
+        assert_eq!(
+            next_token(&mut tok_seq).kind,
+            TokenKind::Operator(OperatorKind::Binary(BinaryOperatorKind::Comparision))
+        );
+        assert_eq!(
+            next_token(&mut tok_seq).kind,
+            TokenKind::Operator(OperatorKind::Binary(BinaryOperatorKind::LessOrEq))
+        );
         assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Undefined('|'));
     }
     #[test]
@@ -40,7 +46,7 @@ mod tests {
         let mut input = InputFile::new(String::from(
             "while 1 == 1; {
             let hello = \"world\";
-        }",
+        }"
         ));
         let ast = parser::parse(&mut input);
         assert!(matches!(ast, Ast::WhileNode { .. }));
@@ -50,7 +56,7 @@ mod tests {
         let mut input = InputFile::new(String::from(
             "if 1 == 2; {
                 let wow = \"uWu\";
-            }",
+            }"
         ));
         let ast = parser::parse(&mut input);
         assert!(matches!(ast, Ast::IfNode { .. }))

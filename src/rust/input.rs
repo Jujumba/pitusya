@@ -4,7 +4,7 @@ use std::cell::RefCell;
 pub struct InputFile {
     content: Vec<char>,
     content_str: String,
-    cursor: RefCell<usize>,
+    cursor: RefCell<usize>
 }
 
 impl InputFile {
@@ -46,7 +46,7 @@ impl InputFile {
         Self {
             content: content.chars().collect(),
             content_str: content,
-            cursor: RefCell::new(0),
+            cursor: RefCell::new(0)
         }
     }
     pub fn get_str(&self) -> &str {

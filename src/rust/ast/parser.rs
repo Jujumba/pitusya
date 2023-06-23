@@ -11,7 +11,7 @@ pub fn parse(input: &mut InputFile) -> Ast {
         TokenKind::Identifier(_) | TokenKind::Literal(_) | TokenKind::Operator(OperatorKind::LParen) => {
             input.move_back_cursor(t.len);
             parse_expression(input)
-        },
+        }
         TokenKind::Keyword(KeywordKind::If) | TokenKind::Keyword(KeywordKind::While) => {
             let condition = Box::new(parse_expression(input));
             let curly = next_token(input);
@@ -34,7 +34,7 @@ pub fn parse(input: &mut InputFile) -> Ast {
             } else {
                 abort_compilation!(format!("Expected `}}`, but got {:?}", curly));
             }
-        },
+        }
         TokenKind::EOF => Ast::EOF,
         TokenKind::Operator(OperatorKind::Semicol) => parse(input),
         _ => {
@@ -49,16 +49,16 @@ fn parse_expression(input: &mut InputFile) -> Ast {
             OperatorKind::Binary(op) => Ast::BinaryNode {
                 left: Box::new(ast),
                 right: Box::new(parse_expression(input)),
-                op,
+                op
             },
             OperatorKind::Semicol => ast,
             e => {
                 abort_compilation!(format!("Expected a binary operator or semicolon, but got {e:?}"));
-            },
+            }
         },
         e => {
             abort_compilation!(format!("Expected a binary operator or semicolon, but got {e:?}"));
-        },
+        }
     }
 }
 fn parse_unit_expr(input: &mut InputFile) -> Ast {
@@ -68,16 +68,16 @@ fn parse_unit_expr(input: &mut InputFile) -> Ast {
             OperatorKind::Binary(op) => Ast::BinaryNode {
                 left: Box::new(ast),
                 right: Box::new(parse_unit_expr(input)),
-                op,
+                op
             },
             OperatorKind::RParen => ast,
             e => {
                 abort_compilation!(format!("Expected a binary operator or `)`, but got {e:?}"));
-            },
+            }
         },
         e => {
             abort_compilation!(format!("Expected `)`, but got {e:?}!"));
-        },
+        }
     }
 }
 fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
@@ -87,7 +87,7 @@ fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
         TokenKind::Operator(OperatorKind::LParen) => Ast::UnitNode(Box::new(parse_unit_expr(input))),
         e => {
             abort_compilation!(format!("Expected {expected}, but got {e:?}"));
-        },
+        }
     }
 }
 fn parse_let_expr(input: &mut InputFile) -> Ast {
@@ -96,14 +96,14 @@ fn parse_let_expr(input: &mut InputFile) -> Ast {
         TokenKind::Identifier(assignee) => match next_token(input).kind {
             TokenKind::Operator(OperatorKind::Assigment) => Ast::LetNode {
                 assignee,
-                value: Box::new(parse_expression(input)),
+                value: Box::new(parse_expression(input))
             },
             e => {
                 abort_compilation!(format!("Expected `=`, but got {:?}", e));
             }
         },
-            e => {
-                abort_compilation!(format!("Expected identifier, but got {:?}", e));
-            }
+        e => {
+            abort_compilation!(format!("Expected identifier, but got {:?}", e));
+        }
     }
 }

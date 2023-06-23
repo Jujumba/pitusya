@@ -11,18 +11,18 @@ pub enum Ast {
     BinaryNode {
         left: Box<Ast>,
         right: Box<Ast>,
-        op: BinaryOperatorKind,
+        op: BinaryOperatorKind
     },
     LetNode {
         assignee: String,
-        value: Box<Ast>,
+        value: Box<Ast>
     },
     IfNode {
         condition: Box<Ast>,
-        body: Vec<Box<Ast>>,
+        body: Vec<Box<Ast>>
     },
     WhileNode {
         condition: Box<Ast>,
-        body: Vec<Box<Ast>>,
-    },
+        body: Vec<Box<Ast>>
+    }
 }
