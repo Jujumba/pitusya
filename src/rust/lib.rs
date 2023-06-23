@@ -31,8 +31,8 @@ mod tests {
     #[test]
     fn test_lexer() {
         let mut tok_seq = InputFile::new(String::from("==<=|"));
-        assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::Comparision));
-        assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::LessOrEq));
+        assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::Binary(BinaryOperatorKind::Comparision)));
+        assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Operator(OperatorKind::Binary(BinaryOperatorKind::LessOrEq)));
         assert_eq!(next_token(&mut tok_seq).kind, TokenKind::Undefined('|'));
     }
     #[test]

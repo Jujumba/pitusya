@@ -11,7 +11,7 @@ pub enum Ast {
     BinaryNode {
         left: Box<Ast>,
         right: Box<Ast>,
-        op: OperatorKind,
+        op: BinaryOperatorKind,
     },
     LetNode {
         assignee: String,
