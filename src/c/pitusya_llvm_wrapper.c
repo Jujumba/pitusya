@@ -20,8 +20,8 @@ void PITUSYAPostDestroy() {
     LLVMDisposeModule(MODULE);
     LLVMContextDispose(CONTEXT);
 }
-LLVMValueRef PITUSYAWrapInAnonExpr(LLVMValueRef v) {
-    LLVMValueRef anon = LLVMAddFunction(MODULE, "__anon_expr", LLVMFunctionType(LLVMDoubleTypeInContext(CONTEXT), NULL, 0, 0));
+LLVMValueRef PITUSYAWrapInFunction(LLVMValueRef v, const char* block) {
+    LLVMValueRef anon = LLVMAddFunction(MODULE, block, LLVMFunctionType(LLVMDoubleTypeInContext(CONTEXT), NULL, 0, 0));
     LLVMBasicBlockRef entryBlock = LLVMAppendBasicBlockInContext(CONTEXT, anon, "entry");
     LLVMPositionBuilderAtEnd(BUILDER, entryBlock);
     LLVMBuildRet(BUILDER, v);
