@@ -4,10 +4,17 @@ pub mod input;
 pub mod lexer;
 
 #[macro_export]
-macro_rules! abort_compilation {
-    ($msg:expr) => {
-        eprintln!("Compilation error:\n\t{}", $msg);
-        std::process::exit(18)
+macro_rules! abort_syntax_analysis {
+    ($pos: expr) => {
+        eprintln!("Compilation error at position {}", $pos);
+        std::process::exit(18);
+    };
+    ($pos: expr, $expected: expr, $error: expr) => {
+        eprintln!(
+            "Compilation error at position {}:\n\tExpected {}, but got {:?}",
+            $pos, $expected, $error
+        );
+        std::process::exit(18);
     };
 }
 
@@ -46,7 +53,7 @@ mod tests {
         let mut input = InputFile::new(String::from(
             "while 1 == 1; {
             let hello = \"world\";
-        }"
+        }",
         ));
         let ast = parser::parse(&mut input);
         assert!(matches!(ast, Ast::WhileNode { .. }));
@@ -56,7 +63,7 @@ mod tests {
         let mut input = InputFile::new(String::from(
             "if 1 == 2; {
                 let wow = \"uWu\";
-            }"
+            }",
         ));
         let ast = parser::parse(&mut input);
         assert!(matches!(ast, Ast::IfNode { .. }))

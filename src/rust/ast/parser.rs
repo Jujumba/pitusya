@@ -1,4 +1,4 @@
-use crate::abort_compilation;
+use crate::abort_syntax_analysis;
 use crate::ast::Ast;
 use crate::input::InputFile;
 use crate::lexer::next_token;
@@ -23,7 +23,7 @@ pub fn parse(input: &mut InputFile) -> Ast {
                     body.push(Box::new(parse(input)));
                     curly = next_token(input);
                     if curly.kind == TokenKind::EOF {
-                        abort_compilation!(format!("Expected `}}`, but got {:?}", curly));
+                        abort_syntax_analysis!(input.get_cursor(), "`}}`", curly);
                     }
                 }
                 if matches!(t.kind, TokenKind::Keyword(KeywordKind::While)) {
@@ -32,13 +32,13 @@ pub fn parse(input: &mut InputFile) -> Ast {
                     Ast::IfNode { condition, body }
                 }
             } else {
-                abort_compilation!(format!("Expected `}}`, but got {:?}", curly));
+                abort_syntax_analysis!(input.get_cursor(), "`}}`", curly);
             }
         }
         TokenKind::EOF => Ast::EOF,
         TokenKind::Operator(OperatorKind::Semicol) => parse(input),
         _ => {
-            abort_compilation!(format!("Unexpected token at position {}", input.get_cursor()));
+            abort_syntax_analysis!(input.get_cursor());
         }
     }
 }
@@ -49,15 +49,15 @@ fn parse_expression(input: &mut InputFile) -> Ast {
             OperatorKind::Binary(op) => Ast::BinaryNode {
                 left: Box::new(ast),
                 right: Box::new(parse_expression(input)),
-                op
+                op,
             },
             OperatorKind::Semicol => ast,
             e => {
-                abort_compilation!(format!("Expected a binary operator or semicolon, but got {e:?}"));
+                abort_syntax_analysis!(input.get_cursor(), "a binary operator or semicolon", e);
             }
         },
         e => {
-            abort_compilation!(format!("Expected a binary operator or semicolon, but got {e:?}"));
+            abort_syntax_analysis!(input.get_cursor(), "a binary operator or semicolon", e);
         }
     }
 }
@@ -68,15 +68,15 @@ fn parse_unit_expr(input: &mut InputFile) -> Ast {
             OperatorKind::Binary(op) => Ast::BinaryNode {
                 left: Box::new(ast),
                 right: Box::new(parse_unit_expr(input)),
-                op
+                op,
             },
             OperatorKind::RParen => ast,
             e => {
-                abort_compilation!(format!("Expected a binary operator or `)`, but got {e:?}"));
+                abort_syntax_analysis!(input.get_cursor(), "a binary operator or `)`", e);
             }
         },
         e => {
-            abort_compilation!(format!("Expected `)`, but got {e:?}!"));
+            abort_syntax_analysis!(input.get_cursor(), "`)`", e);
         }
     }
 }
@@ -86,7 +86,7 @@ fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
         TokenKind::Literal(l) => Ast::ValueNode(l),
         TokenKind::Operator(OperatorKind::LParen) => Ast::UnitNode(Box::new(parse_unit_expr(input))),
         e => {
-            abort_compilation!(format!("Expected {expected}, but got {e:?}"));
+            abort_syntax_analysis!(input.get_cursor(), expected, e);
         }
     }
 }
@@ -96,14 +96,14 @@ fn parse_let_expr(input: &mut InputFile) -> Ast {
         TokenKind::Identifier(assignee) => match next_token(input).kind {
             TokenKind::Operator(OperatorKind::Assigment) => Ast::LetNode {
                 assignee,
-                value: Box::new(parse_expression(input))
+                value: Box::new(parse_expression(input)),
             },
             e => {
-                abort_compilation!(format!("Expected `=`, but got {:?}", e));
+                abort_syntax_analysis!(input.get_cursor(), "`=`", e);
             }
         },
         e => {
-            abort_compilation!(format!("Expected identifier, but got {:?}", e));
+            abort_syntax_analysis!(input.get_cursor(), "an identifier", e);
         }
     }
 }
