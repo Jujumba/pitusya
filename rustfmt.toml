@@ -4,7 +4,6 @@ group_imports = "StdExternalCrate"
 fn_params_layout = "Compressed"
 newline_style = "Unix"
 trailing_comma = "Never"
-match_block_trailing_comma = false
 max_width = 140
 use_field_init_shorthand = true
 struct_variant_width = 15
