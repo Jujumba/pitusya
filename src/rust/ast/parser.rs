@@ -29,13 +29,14 @@ pub fn parse(input: &mut InputFile) -> Ast {
 }
 fn parse_prototype(input: &mut InputFile) -> Ast {
     let name_token = next_token(input);
-    let name = if let TokenKind::Identifier(name) = name_token.kind {
-        name
-    } else {
-        abort_syntax_analysis!(
-            input.get_cursor(),
-            format!("Expected function's name in its definition, but got {name_token:?}")
-        );
+    let name = match name_token.kind {
+        TokenKind::Identifier(name) => name,
+        e => {
+            abort_syntax_analysis!(
+                input.get_cursor(),
+                format!("Expected function's name in its definition, but got {e:?}")
+            );
+        }
     };
     match next_token(input).kind {
         TokenKind::Operator(OperatorKind::LParen) => (),
