@@ -23,11 +23,11 @@ pub enum OperatorKind {
     LBracket,  // [
     RBracket,  // ]
     Semicol,   // ;
-    Assigment, // =
     Binary(BinaryOperatorKind)
 }
 #[derive(Debug, PartialEq)]
 pub enum BinaryOperatorKind {
+    Assigment, // =
     Comparision,    // ==
     Addition,       // +
     Subtraction,    // -
@@ -62,7 +62,7 @@ impl TryFrom<&str> for OperatorKind {
             "/" => Ok(Self::Binary(BinaryOperatorKind::Division)),
             "<" => Ok(Self::Binary(BinaryOperatorKind::Less)),
             ">" => Ok(Self::Binary(BinaryOperatorKind::Bigger)),
-            "=" => Ok(Self::Assigment),
+            "=" => Ok(Self::Binary(BinaryOperatorKind::Assigment)),
             ";" => Ok(Self::Semicol),
             "(" => Ok(Self::LParen),
             ")" => Ok(Self::RParen),
