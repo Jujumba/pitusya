@@ -79,7 +79,8 @@ impl TryFrom<&str> for OperatorKind {
 pub enum KeywordKind {
     If,
     Let,
-    While
+    While,
+    Fn
 }
 
 #[derive(Debug, PartialEq)]
