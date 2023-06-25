@@ -30,7 +30,7 @@ pub fn parse(input: &mut InputFile) -> Ast {
 fn parse_block(input: &mut InputFile) -> Vec<Ast> {
     let curly = next_token(input);
     if curly.kind != TokenKind::Operator(OperatorKind::LCurly) {
-        abort_syntax_analysis!(input.get_cursor(), "`}}`", curly);
+        abort_syntax_analysis!(input.get_cursor(), "`}`", curly);
     }
     let mut body = vec![];
     let mut t = next_token(input);
@@ -39,7 +39,7 @@ fn parse_block(input: &mut InputFile) -> Vec<Ast> {
         body.push(parse(input)); // todo: fetching the same token twice
         t = next_token(input);
         if t.kind == TokenKind::EOF {
-            abort_syntax_analysis!(input.get_cursor(), "`}}`", t);
+            abort_syntax_analysis!(input.get_cursor(), "`}`", t);
         }
     }
     body
