@@ -44,7 +44,7 @@ fn generate_ir(ast: Ast) -> LLVMPointer {
             _ => todo!("Strings?"),
         },
         Ast::BinaryNode { left, right, op } => {
-            let (lhs, rhs) = (codegen(*left), codegen(*right));
+            let (lhs, rhs) = (generate_ir(*left), generate_ir(*right));
             match op {
                 BinaryOperatorKind::Addition => unsafe { PITUSYABuildAdd(lhs, rhs) },
                 BinaryOperatorKind::Multiplication => unsafe { PITUSYABuildMul(lhs, rhs) },
@@ -53,7 +53,7 @@ fn generate_ir(ast: Ast) -> LLVMPointer {
                 _ => todo!(),
             }
         }
-        Ast::UnitNode(unit) => codegen(*unit),
+        Ast::UnitNode(unit) => generate_ir(*unit),
         _ => todo!(),
     }
 }
