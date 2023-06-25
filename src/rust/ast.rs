@@ -24,5 +24,13 @@ pub enum Ast {
     WhileNode {
         condition: Box<Ast>,
         body: Vec<Ast>
+    },
+    PrototypeNode {
+        name: String,
+        args: Vec<String>
+    },
+    FunctionNode {
+        proto: Box<Ast>,
+        body: Vec<Ast>
     }
 }
