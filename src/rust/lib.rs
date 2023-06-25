@@ -9,6 +9,10 @@ macro_rules! abort_syntax_analysis {
         eprintln!("Compilation error at position {}", $pos);
         std::process::exit(18);
     };
+    ($pos:expr, $msg:expr) => {
+        eprintln!("Compilation error at position {}\n\t{}", $pos, $msg);
+        std::process::exit(18);
+    };
     ($pos: expr, $expected: expr, $error: expr) => {
         eprintln!(
             "Compilation error at position {}:\n\tExpected {}, but got {:?}",
