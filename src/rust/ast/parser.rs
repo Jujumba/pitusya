@@ -27,6 +27,35 @@ pub fn parse(input: &mut InputFile) -> Ast {
         }
     }
 }
+fn parse_prototype(input: &mut InputFile) -> Ast {
+    let name_token = next_token(input);
+    let name = if let TokenKind::Identifier(name) = name_token.kind {
+        name
+    } else {
+        abort_syntax_analysis!(
+            input.get_cursor(),
+            format!("Expected function's name in its definition, but got {name_token:?}")
+        );
+    };
+    match next_token(input).kind {
+        TokenKind::Operator(OperatorKind::LParen) => (),
+        e => {
+            abort_syntax_analysis!(input.get_cursor(), "`)`", e);
+        }
+    }
+    let mut args = vec![];
+    let mut t = next_token(input).kind;
+    while t != TokenKind::Operator(OperatorKind::RParen) {
+        match t {
+            TokenKind::Identifier(param) => args.push(param),
+            e => {
+                abort_syntax_analysis!(input.get_cursor(), "an identifier", e);
+            }
+        }
+        t = next_token(input).kind;
+    }
+    Ast::PrototypeNode { name, args }
+}
 fn parse_block(input: &mut InputFile) -> Vec<Ast> {
     let curly = next_token(input);
     if curly.kind != TokenKind::Operator(OperatorKind::LCurly) {
