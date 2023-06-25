@@ -19,10 +19,10 @@ pub enum Ast {
     },
     IfNode {
         condition: Box<Ast>,
-        body: Vec<Box<Ast>>
+        body: Vec<Ast>
     },
     WhileNode {
         condition: Box<Ast>,
-        body: Vec<Box<Ast>>
+        body: Vec<Ast>
     }
 }

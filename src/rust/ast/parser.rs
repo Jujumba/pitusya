@@ -12,29 +12,14 @@ pub fn parse(input: &mut InputFile) -> Ast {
             input.move_back_cursor(t.len);
             parse_expression(input)
         }
-        TokenKind::Keyword(KeywordKind::If) | TokenKind::Keyword(KeywordKind::While) => {
-            let condition = Box::new(parse_expression(input));
-            let curly = next_token(input);
-            if matches!(curly.kind, TokenKind::Operator(OperatorKind::LCurly)) {
-                let mut curly = next_token(input);
-                let mut body = vec![];
-                while !matches!(curly.kind, TokenKind::Operator(OperatorKind::RCurly)) {
-                    input.move_back_cursor(curly.len);
-                    body.push(Box::new(parse(input)));
-                    curly = next_token(input);
-                    if curly.kind == TokenKind::EOF {
-                        abort_syntax_analysis!(input.get_cursor(), "`}}`", curly);
-                    }
-                }
-                if matches!(t.kind, TokenKind::Keyword(KeywordKind::While)) {
-                    Ast::WhileNode { condition, body }
-                } else {
-                    Ast::IfNode { condition, body }
-                }
-            } else {
-                abort_syntax_analysis!(input.get_cursor(), "`}}`", curly);
-            }
-        }
+        TokenKind::Keyword(KeywordKind::If) => Ast::IfNode {
+            condition: Box::new(parse_expression(input)),
+            body: parse_block(input),
+        },
+        TokenKind::Keyword(KeywordKind::While) => Ast::WhileNode {
+            condition: Box::new(parse_expression(input)),
+            body: parse_block(input),
+        },
         TokenKind::EOF => Ast::EOF,
         TokenKind::Operator(OperatorKind::Semicol) => parse(input),
         _ => {
@@ -42,10 +27,30 @@ pub fn parse(input: &mut InputFile) -> Ast {
         }
     }
 }
+fn parse_block(input: &mut InputFile) -> Vec<Ast> {
+    let curly = next_token(input);
+    if curly.kind != TokenKind::Operator(OperatorKind::LCurly) {
+        abort_syntax_analysis!(input.get_cursor(), "`}}`", curly);
+    }
+    let mut body = vec![];
+    let mut t = next_token(input);
+    while t.kind != TokenKind::Operator(OperatorKind::RCurly) {
+        input.move_back_cursor(t.len); // todo: bad code ^.^
+        body.push(parse(input)); // todo: fetching the same token twice
+        t = next_token(input);
+        if t.kind == TokenKind::EOF {
+            abort_syntax_analysis!(input.get_cursor(), "`}}`", t);
+        }
+    }
+    body
+}
 fn parse_expression(input: &mut InputFile) -> Ast {
     let ast = fetch_lhs(input, "an identifier or literal");
     match next_token(input).kind {
         TokenKind::Operator(op) => match op {
+            OperatorKind::Binary(BinaryOperatorKind::Assigment) if matches!(ast, Ast::ValueNode(_)) => {
+                abort_syntax_analysis!(input.get_cursor(), format!("Cannot assign to the const-value of {ast:?}"));
+            }
             OperatorKind::Binary(op) => Ast::BinaryNode {
                 left: Box::new(ast),
                 right: Box::new(parse_expression(input)),
@@ -94,7 +99,7 @@ fn parse_let_expr(input: &mut InputFile) -> Ast {
     let token = next_token(input);
     match token.kind {
         TokenKind::Identifier(assignee) => match next_token(input).kind {
-            TokenKind::Operator(OperatorKind::Assigment) => Ast::LetNode {
+            TokenKind::Operator(OperatorKind::Binary(BinaryOperatorKind::Assigment)) => Ast::LetNode {
                 assignee,
                 value: Box::new(parse_expression(input)),
             },
