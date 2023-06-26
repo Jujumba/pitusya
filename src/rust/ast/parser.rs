@@ -20,8 +20,12 @@ pub fn parse(input: &mut InputFile) -> Ast {
             condition: Box::new(parse_expression(input)),
             body: parse_block(input),
         },
-        TokenKind::EOF => Ast::EOF,
+        TokenKind::Keyword(KeywordKind::Fn) => Ast::FunctionNode {
+            proto: Box::new(parse_prototype(input)),
+            body: parse_block(input),
+        },
         TokenKind::Operator(OperatorKind::Semicol) => parse(input),
+        TokenKind::EOF => Ast::EOF,
         _ => {
             abort_syntax_analysis!(input.get_cursor());
         }
