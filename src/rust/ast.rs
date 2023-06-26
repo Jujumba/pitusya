@@ -27,7 +27,7 @@ pub enum Ast {
     },
     PrototypeNode {
         name: String,
-        args: Vec<String>
+        args: Vec<Ast>
     },
     FunctionNode {
         proto: Box<Ast>,

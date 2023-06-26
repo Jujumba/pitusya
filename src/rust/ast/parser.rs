@@ -21,7 +21,7 @@ pub fn parse(input: &mut InputFile) -> Ast {
             body: parse_block(input),
         },
         TokenKind::Keyword(KeywordKind::Fn) => Ast::FunctionNode {
-            proto: Box::new(parse_prototype(input)),
+            proto: Box::new(parse_prototype(input, true)),
             body: parse_block(input),
         },
         TokenKind::Operator(OperatorKind::Semicol) => parse(input),
@@ -31,7 +31,7 @@ pub fn parse(input: &mut InputFile) -> Ast {
         }
     }
 }
-fn parse_prototype(input: &mut InputFile) -> Ast {
+fn parse_prototype(input: &mut InputFile, definition: bool) -> Ast {
     let name_token = next_token(input);
     let name = match name_token.kind {
         TokenKind::Identifier(name) => name,
@@ -49,7 +49,8 @@ fn parse_prototype(input: &mut InputFile) -> Ast {
     let mut t = next_token(input).kind;
     while t != TokenKind::Operator(OperatorKind::RParen) {
         match t {
-            TokenKind::Identifier(param) => args.push(param),
+            TokenKind::Identifier(param) => args.push(Ast::IdentifierNode(param)),
+            TokenKind::Literal(literal) if !definition => args.push(Ast::ValueNode(literal)),
             e => {
                 abort_syntax_analysis!(input.get_cursor(), "an identifier", e);
             }
@@ -131,30 +132,20 @@ fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
     }
 }
 fn fetch_ident_or_proto(input: &mut InputFile) -> Ast {
-    let name = match next_token(input).kind {
+    let name_token = next_token(input);
+    let name = match name_token.kind {
         TokenKind::Identifier(i) => i,
         e => {
             abort_syntax_analysis!(input.get_cursor(), "an identifier", e); // todo: return Result<Ast, ?>
         }
     };
     let paren = next_token(input);
+    input.move_back_cursor(paren.len);
     if !matches!(paren.kind, TokenKind::Operator(OperatorKind::LParen)) {
-        input.move_back_cursor(paren.len);
         return Ast::IdentifierNode(name);
     };
-    let mut args = Vec::new();
-    loop {
-        let t = next_token(input).kind;
-        if let TokenKind::Operator(OperatorKind::RParen) = t {
-            return Ast::PrototypeNode { name, args };
-        }
-        match next_token(input).kind {
-            TokenKind::Identifier(arg) => args.push(arg),
-            e => {
-                abort_syntax_analysis!(input.get_cursor(), "an identifier", e);
-            }
-        }
-    }
+    input.move_back_cursor(name_token.len);
+    parse_prototype(input, false)
 }
 fn parse_let_expr(input: &mut InputFile) -> Ast {
     let token = next_token(input);
