@@ -45,6 +45,7 @@ impl TryFrom<&str> for KeywordKind {
             "if" => Ok(KeywordKind::If),
             "let" => Ok(KeywordKind::Let),
             "while" => Ok(KeywordKind::While),
+            "fn" => Ok(KeywordKind::Fn),
             _ => Err(())
         }
     }
