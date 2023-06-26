@@ -117,12 +117,42 @@ fn parse_unit_expr(input: &mut InputFile) -> Ast {
     }
 }
 fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
-    match next_token(input).kind {
-        TokenKind::Identifier(i) => Ast::IdentifierNode(i),
+    let lhs_token = next_token(input);
+    match lhs_token.kind {
+        TokenKind::Identifier(_) => {
+            input.move_back_cursor(lhs_token.len); // todo: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            fetch_ident_or_proto(input)
+        },
         TokenKind::Literal(l) => Ast::ValueNode(l),
         TokenKind::Operator(OperatorKind::LParen) => Ast::UnitNode(Box::new(parse_unit_expr(input))),
         e => {
             abort_syntax_analysis!(input.get_cursor(), expected, e);
+        }
+    }
+}
+fn fetch_ident_or_proto(input: &mut InputFile) -> Ast {
+    let name = match next_token(input).kind {
+        TokenKind::Identifier(i) => i,
+        e => {
+            abort_syntax_analysis!(input.get_cursor(), "an identifier", e); // todo: return Result<Ast, ?>
+        }
+    };
+    let paren = next_token(input);
+    if !matches!(paren.kind, TokenKind::Operator(OperatorKind::LParen)) {
+        input.move_back_cursor(paren.len);
+        return Ast::IdentifierNode(name);
+    };
+    let mut args = Vec::new();
+    loop {
+        let t = next_token(input).kind;
+        if let TokenKind::Operator(OperatorKind::RParen) = t {
+            return Ast::PrototypeNode { name, args };
+        }
+        match next_token(input).kind {
+            TokenKind::Identifier(arg) => args.push(arg),
+            e => {
+                abort_syntax_analysis!(input.get_cursor(), "an identifier", e);
+            }
         }
     }
 }
