@@ -12,12 +12,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install LLVM
-      run: |
-        wget -O llvm.sh https://apt.llvm.org/llvm.sh
-        chmod +x llvm.sh
-        sudo ./llvm.sh all
-
     - name: Please install LLVM
       run: |
         sudo apt update
