@@ -6,6 +6,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      LLVM_VERSION: 14
+
     steps:
     - uses: actions/checkout@v3
 
@@ -13,7 +16,7 @@ jobs:
       run: |
         wget -O llvm.sh https://apt.llvm.org/llvm.sh
         chmod +x llvm.sh
-        sudo ./llvm.sh 16
+        sudo ./llvm.sh all
 
     - name: Update Rust
       run: rustup update stable
