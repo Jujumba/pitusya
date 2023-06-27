@@ -36,9 +36,12 @@ mod tests {
     }
     #[test]
     fn test_let_expr() {
-        let mut parse = InputFile::new("fn main() {
+        let mut parse = InputFile::new(
+            "fn main() {
             let pitusya = \"cool\";
-        }".to_string());
+        }"
+            .to_string()
+        );
         parser::parse(&mut parse);
     }
     #[test]
@@ -61,7 +64,7 @@ mod tests {
         let mut input = InputFile::new(String::from(
             "while 1 == 1; {
             let hello = \"world\";
-        }",
+        }"
         ));
         let ast = parser::parse(&mut input);
         assert!(matches!(ast[0], Ast::WhileNode { .. }));
@@ -72,14 +75,12 @@ mod tests {
         let mut input = InputFile::new(String::from(
             "if 1 == 2; {
                 let wow = \"uWu\";
-            }",
+            }"
         ));
         let ast = parser::parse(&mut input);
         assert!(matches!(ast[0], Ast::IfNode { .. }))
     }
     #[test]
     #[ignore = "Does all that CI configuration head ache worth it, since I dont need to test anymore?.."]
-    fn one_more_thing() {
-
-    }
+    fn one_more_thing() {}
 }

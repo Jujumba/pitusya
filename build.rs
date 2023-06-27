@@ -15,7 +15,14 @@ fn main() {
         .expect("Build error: LLVM is not installed!");
     let llvm_flags = String::from_utf8(llvm_flags_process.stdout).unwrap();
 
-    let llvm_includedir = String::from_utf8(Command::new("llvm-config").args(["--includedir"]).output().expect("Build error: LLVM is not installed!").stdout).unwrap();
+    let llvm_includedir = String::from_utf8(
+        Command::new("llvm-config")
+            .args(["--includedir"])
+            .output()
+            .expect("Build error: LLVM is not installed!")
+            .stdout
+    )
+    .unwrap();
     let llvm_includedir = llvm_includedir.trim();
 
     let mut libpitusya = cc::Build::new();

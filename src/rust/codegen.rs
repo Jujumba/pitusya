@@ -34,14 +34,14 @@ pub fn codegen(ast: Ast) -> LLVMPointer {
                 value
             }
         }
-        _ => unsafe { PITUSYAWrapInFunction(generate_ir(ast), "__anon_expr\0".as_ptr() as *const i8) },
+        _ => unsafe { PITUSYAWrapInFunction(generate_ir(ast), "__anon_expr\0".as_ptr() as *const i8) }
     }
 }
 fn generate_ir(ast: Ast) -> LLVMPointer {
     match ast {
         Ast::ValueNode(literal) => match literal {
             LiteralKind::Num(n) => unsafe { PITUSYAGenerateFP(n) },
-            _ => todo!("Strings?"),
+            _ => todo!("Strings?")
         },
         Ast::BinaryNode { left, right, op } => {
             let (lhs, rhs) = (generate_ir(*left), generate_ir(*right));
@@ -50,11 +50,11 @@ fn generate_ir(ast: Ast) -> LLVMPointer {
                 BinaryOperatorKind::Multiplication => unsafe { PITUSYABuildMul(lhs, rhs) },
                 BinaryOperatorKind::Subtraction => unsafe { PITUSYABuildSub(lhs, rhs) },
                 BinaryOperatorKind::Division => unsafe { PITUSYABuildDiv(lhs, rhs) },
-                _ => todo!(),
+                _ => todo!()
             }
         }
         Ast::UnitNode(unit) => generate_ir(*unit),
-        _ => todo!(),
+        _ => todo!()
     }
 }
 fn get_vtable() -> &'static mut HashMap<String, LLVMPointer> {
