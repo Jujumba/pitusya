@@ -46,6 +46,7 @@ impl TryFrom<&str> for KeywordKind {
             "let" => Ok(KeywordKind::Let),
             "while" => Ok(KeywordKind::While),
             "fn" => Ok(KeywordKind::Fn),
+            "ret" => Ok(KeywordKind::Ret),
             _ => Err(())
         }
     }
@@ -81,7 +82,8 @@ pub enum KeywordKind {
     If,
     Let,
     While,
-    Fn
+    Fn,
+    Ret
 }
 
 #[derive(Debug, PartialEq)]

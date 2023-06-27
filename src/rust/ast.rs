@@ -32,5 +32,6 @@ pub enum Ast {
     FunctionNode {
         proto: Box<Ast>,
         body: Vec<Ast>
-    }
+    },
+    RetNode(Box<Ast>)
 }
