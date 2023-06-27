@@ -4,19 +4,21 @@ use crate::input::InputFile;
 use crate::lexer::next_token;
 use crate::lexer::tokens::*;
 
-pub fn parse(input: &mut InputFile) -> Ast {
-    let t = next_token(input);
-    match &t.kind {
-        TokenKind::Keyword(KeywordKind::Fn) => Ast::FunctionNode {
-            proto: Box::new(parse_prototype(input, true)),
-            body: parse_block(input),
-        },
-        TokenKind::Operator(OperatorKind::Semicol) => parse(input),
-        TokenKind::EOF => Ast::EOF,
-        _ => {
-            abort_syntax_analysis!(input.get_cursor()); // todo
+pub fn parse(input: &mut InputFile) -> Vec<Ast> {
+    let mut ast = Vec::new();
+    loop {
+        match next_token(input).kind {
+            TokenKind::Keyword(KeywordKind::Fn) => ast.push(Ast::FunctionNode {
+                proto: Box::new(parse_prototype(input, true)),
+                body: parse_block(input),
+            }),
+            TokenKind::EOF => break,
+            _ => {
+                abort_syntax_analysis!(input.get_cursor()); // todo
+            }
         }
     }
+    ast
 }
 fn parse_prototype(input: &mut InputFile, definition: bool) -> Ast {
     let name_token = next_token(input);

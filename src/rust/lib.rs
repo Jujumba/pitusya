@@ -60,7 +60,7 @@ mod tests {
         }",
         ));
         let ast = parser::parse(&mut input);
-        assert!(matches!(ast, Ast::WhileNode { .. }));
+        assert!(matches!(ast[0], Ast::WhileNode { .. }));
     }
     #[test]
     fn test_if_expression_parsing() {
@@ -70,6 +70,6 @@ mod tests {
             }",
         ));
         let ast = parser::parse(&mut input);
-        assert!(matches!(ast, Ast::IfNode { .. }))
+        assert!(matches!(ast[0], Ast::IfNode { .. }))
     }
 }
