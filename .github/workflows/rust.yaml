@@ -18,6 +18,11 @@ jobs:
         chmod +x llvm.sh
         sudo ./llvm.sh all
 
+    - name: Please install LLVM
+      run: |
+        sudo apt update
+        sudo apt install llvm
+
     - name: Update Rust
       run: rustup update stable
 
