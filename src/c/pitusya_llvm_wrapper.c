@@ -21,14 +21,14 @@ void PITUSYAPostDestroy() {
     LLVMDisposeModule(MODULE);
     LLVMContextDispose(CONTEXT);
 }
-LLVMValueRef PITUSYACreateFunction(LLVMValueRef v, const char* name, const char** argv, size_t argc) {
+LLVMValueRef PITUSYACreateFunction(const char* name, const char** argn, size_t argc) {
     LLVMTypeRef args[argc]; // todo: if argc == 0 pass null (?)
     for (size_t i = 0; i < argc; ++i) {
         args[i] = LLVMDoubleTypeInContext(CONTEXT);
     }
     LLVMValueRef function = LLVMAddFunction(MODULE, name, LLVMFunctionType(LLVMDoubleTypeInContext(CONTEXT), args, 0, 0));
     for (size_t i = 0; i < argc; ++i) {
-        LLVMSetValueName2(LLVMGetParam(function, i), argv[i], strlen(argv[i]));
+        LLVMSetValueName2(LLVMGetParam(function, i), argn[i], strlen(argn[i]));
     }
     LLVMBasicBlockRef entryBlock = LLVMAppendBasicBlockInContext(CONTEXT, function, "entry");
     LLVMPositionBuilderAtEnd(BUILDER, entryBlock);
