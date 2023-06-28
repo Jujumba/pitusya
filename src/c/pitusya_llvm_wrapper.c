@@ -22,17 +22,17 @@ void PITUSYAPostDestroy() {
     LLVMContextDispose(CONTEXT);
 }
 LLVMValueRef PITUSYACreateFunction(const char* name, const char** argn, size_t argc) {
-    LLVMTypeRef args[argc]; // todo: if argc == 0 pass null (?)
+    LLVMTypeRef args[argc];
     for (size_t i = 0; i < argc; ++i) {
         args[i] = LLVMDoubleTypeInContext(CONTEXT);
     }
-    LLVMValueRef function = LLVMAddFunction(MODULE, name, LLVMFunctionType(LLVMDoubleTypeInContext(CONTEXT), args, 0, 0));
+    LLVMValueRef function = LLVMAddFunction(MODULE, name, LLVMFunctionType(LLVMDoubleTypeInContext(CONTEXT), args, argc, 0));
     for (size_t i = 0; i < argc; ++i) {
         LLVMSetValueName2(LLVMGetParam(function, i), argn[i], strlen(argn[i]));
     }
     LLVMBasicBlockRef entryBlock = LLVMAppendBasicBlockInContext(CONTEXT, function, "entry");
     LLVMPositionBuilderAtEnd(BUILDER, entryBlock);
-    LLVMVerifyFunction(function, LLVMAbortProcessAction);
+    // LLVMVerifyFunction(function, LLVMAbortProcessAction); // todo: extract to separate function
     return function;
 }
 LLVMValueRef PITUSYAGenerateFP(double n) {
@@ -52,9 +52,4 @@ LLVMValueRef PITUSYABuildSub(LLVMValueRef lhs, LLVMValueRef rhs) {
 }
 LLVMValueRef PITUSYABuildDiv(LLVMValueRef lhs, LLVMValueRef rhs) {
     return LLVMBuildFDiv(BUILDER, lhs, rhs, "divtmp");
-}
-void PITUSYAPrintIR(LLVMValueRef ir) {
-    char* s = LLVMPrintValueToString(ir);
-    printf("%s\n",s);
-    LLVMDisposeMessage(s);
 }
