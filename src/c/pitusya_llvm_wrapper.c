@@ -17,6 +17,7 @@ void PITUSYAPreInit() {
 }
 void PITUSYAPostDestroy() {
     LLVMDisposeBuilder(BUILDER);
+    LLVMDumpModule(MODULE);
     LLVMDisposeModule(MODULE);
     LLVMContextDispose(CONTEXT);
 }
