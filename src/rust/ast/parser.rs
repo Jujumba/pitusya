@@ -1,8 +1,25 @@
-use crate::abort_syntax_analysis;
 use crate::ast::Ast;
 use crate::input::InputFile;
 use crate::lexer::next_token;
 use crate::lexer::tokens::*;
+
+macro_rules! abort_syntax_analysis {
+    ($pos: expr) => {
+        eprintln!("Compilation error at position {}", $pos);
+        std::process::exit(18);
+    };
+    ($pos:expr, $msg:expr) => {
+        eprintln!("Compilation error at position {}\n\t{}", $pos, $msg);
+        std::process::exit(18);
+    };
+    ($pos: expr, $expected: expr, $error: expr) => {
+        eprintln!(
+            "Compilation error at position {}:\n\tExpected {}, but got {:?}",
+            $pos, $expected, $error
+        );
+        std::process::exit(18);
+    };
+}
 
 pub fn parse(input: &mut InputFile) -> Vec<Ast> {
     let mut ast = Vec::new();
