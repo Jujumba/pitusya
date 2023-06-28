@@ -20,13 +20,19 @@ void PITUSYAPostDestroy() {
     LLVMDisposeModule(MODULE);
     LLVMContextDispose(CONTEXT);
 }
-LLVMValueRef PITUSYAWrapInFunction(LLVMValueRef v, const char* block) {
-    LLVMValueRef anon = LLVMAddFunction(MODULE, block, LLVMFunctionType(LLVMDoubleTypeInContext(CONTEXT), NULL, 0, 0));
-    LLVMBasicBlockRef entryBlock = LLVMAppendBasicBlockInContext(CONTEXT, anon, "entry");
+LLVMValueRef PITUSYACreateFunction(LLVMValueRef v, const char* name, const char** argv, size_t argc) {
+    LLVMTypeRef args[argc]; // todo: if argc == 0 pass null (?)
+    for (size_t i = 0; i < argc; ++i) {
+        args[i] = LLVMDoubleTypeInContext(CONTEXT);
+    }
+    LLVMValueRef function = LLVMAddFunction(MODULE, name, LLVMFunctionType(LLVMDoubleTypeInContext(CONTEXT), args, 0, 0));
+    for (size_t i = 0; i < argc; ++i) {
+        LLVMSetValueName2(LLVMGetParam(function, i), argv[i], strlen(argv[i]));
+    }
+    LLVMBasicBlockRef entryBlock = LLVMAppendBasicBlockInContext(CONTEXT, function, "entry");
     LLVMPositionBuilderAtEnd(BUILDER, entryBlock);
-    LLVMBuildRet(BUILDER, v);
-    LLVMVerifyFunction(anon, LLVMAbortProcessAction);
-    return anon;
+    LLVMVerifyFunction(function, LLVMAbortProcessAction);
+    return function;
 }
 LLVMValueRef PITUSYAGenerateFP(double n) {
     return LLVMConstReal(LLVMDoubleTypeInContext(CONTEXT), n);
