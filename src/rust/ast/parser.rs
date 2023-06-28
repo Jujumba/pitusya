@@ -31,7 +31,7 @@ fn parse_prototype(input: &mut InputFile, definition: bool) -> Ast {
     match next_token(input).kind {
         TokenKind::Operator(OperatorKind::LParen) => (),
         e => {
-            abort_syntax_analysis!(input.get_cursor(), "`)`", e);
+            abort_syntax_analysis!(input.get_cursor(), "`(`", e);
         }
     }
     let mut args = vec![];
