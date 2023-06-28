@@ -35,6 +35,9 @@ LLVMValueRef PITUSYACreateFunction(const char* name, const char** argn, size_t a
     // LLVMVerifyFunction(function, LLVMAbortProcessAction); // todo: extract to separate function
     return function;
 }
+LLVMValueRef PITUSYABuildRet(LLVMValueRef v) {
+    return LLVMBuildRet(BUILDER, v);
+}
 LLVMValueRef PITUSYAGenerateFP(double n) {
     return LLVMConstReal(LLVMDoubleTypeInContext(CONTEXT), n);
 }
