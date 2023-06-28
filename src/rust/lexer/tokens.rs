@@ -16,18 +16,18 @@ pub enum TokenKind {
 
 #[derive(Debug, PartialEq)]
 pub enum OperatorKind {
-    LParen,    // (
-    RParen,    // )
-    LCurly,    // {
-    RCurly,    // }
-    LBracket,  // [
-    RBracket,  // ]
-    Semicol,   // ;
+    LParen,   // (
+    RParen,   // )
+    LCurly,   // {
+    RCurly,   // }
+    LBracket, // [
+    RBracket, // ]
+    Semicol,  // ;
     Binary(BinaryOperatorKind)
 }
 #[derive(Debug, PartialEq)]
 pub enum BinaryOperatorKind {
-    Assigment, // =
+    Assigment,      // =
     Comparision,    // ==
     Addition,       // +
     Subtraction,    // -

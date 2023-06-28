@@ -27,7 +27,7 @@ pub fn parse(input: &mut InputFile) -> Vec<Ast> {
         match next_token(input).kind {
             TokenKind::Keyword(KeywordKind::Fn) => ast.push(Ast::FunctionNode {
                 proto: Box::new(parse_prototype(input, true)),
-                body: parse_block(input),
+                body: parse_block(input)
             }),
             TokenKind::EOF => break,
             _ => {
@@ -82,11 +82,11 @@ fn parse_block(input: &mut InputFile) -> Vec<Ast> {
         match t.kind {
             TokenKind::Keyword(KeywordKind::If) => body.push(Ast::IfNode {
                 condition: Box::new(parse_expression(input)),
-                body: parse_block(input),
+                body: parse_block(input)
             }),
             TokenKind::Keyword(KeywordKind::While) => body.push(Ast::WhileNode {
                 condition: Box::new(parse_expression(input)),
-                body: parse_block(input),
+                body: parse_block(input)
             }),
             TokenKind::Keyword(KeywordKind::Let) => body.push(parse_let_expr(input)),
             TokenKind::Identifier(_) | TokenKind::Literal(_) | TokenKind::Operator(OperatorKind::LParen) => {
@@ -113,7 +113,7 @@ fn parse_expression(input: &mut InputFile) -> Ast {
             OperatorKind::Binary(op) => Ast::BinaryNode {
                 left: Box::new(ast),
                 right: Box::new(parse_expression(input)),
-                op,
+                op
             },
             OperatorKind::Semicol => ast,
             e => {
@@ -132,7 +132,7 @@ fn parse_unit_expr(input: &mut InputFile) -> Ast {
             OperatorKind::Binary(op) => Ast::BinaryNode {
                 left: Box::new(ast),
                 right: Box::new(parse_unit_expr(input)),
-                op,
+                op
             },
             OperatorKind::RParen => ast,
             e => {
@@ -150,7 +150,7 @@ fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
         TokenKind::Identifier(_) => {
             input.move_back_cursor(lhs_token.len); // todo: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             fetch_ident_or_proto(input)
-        },
+        }
         TokenKind::Literal(l) => Ast::ValueNode(l),
         TokenKind::Operator(OperatorKind::LParen) => Ast::UnitNode(Box::new(parse_unit_expr(input))),
         e => {
@@ -180,7 +180,7 @@ fn parse_let_expr(input: &mut InputFile) -> Ast {
         TokenKind::Identifier(assignee) => match next_token(input).kind {
             TokenKind::Operator(OperatorKind::Binary(BinaryOperatorKind::Assigment)) => Ast::LetNode {
                 assignee,
-                value: Box::new(parse_expression(input)),
+                value: Box::new(parse_expression(input))
             },
             e => {
                 abort_syntax_analysis!(input.get_cursor(), "`=`", e);
