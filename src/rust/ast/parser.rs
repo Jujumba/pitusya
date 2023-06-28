@@ -38,6 +38,9 @@ fn parse_prototype(input: &mut InputFile, definition: bool) -> Ast {
     let mut t = next_token(input).kind;
     while t != TokenKind::Operator(OperatorKind::RParen) {
         match t {
+            TokenKind::Identifier(_) if name == "main" => {
+                abort_syntax_analysis!(input.get_cursor(), "Main function cannot accept parameters!");
+            },
             TokenKind::Identifier(param) => args.push(Ast::IdentifierNode(param)),
             TokenKind::Literal(literal) if !definition => args.push(Ast::ValueNode(literal)),
             e => {
