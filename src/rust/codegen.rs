@@ -14,8 +14,8 @@ static mut VTABLE: OnceCell<HashMap<String, LLVMPointer>> = OnceCell::new();
 extern "C" {
     pub fn PITUSYAPreInit();
     pub fn PITUSYAPostDestroy();
-    pub fn PITUSYAPrintIR(ir: LLVMPointer);
-    pub fn PITUSYAWrapInFunction(v: LLVMPointer, block: *const i8) -> LLVMPointer;
+    fn PITUSYACreateFunction(name: *const i8, argv: *const *const i8, argc: usize) -> LLVMPointer;
+    fn PITUSYABuildRet(v: LLVMPointer) -> LLVMPointer;
     fn PITUSYAGenerateFP(n: f64) -> LLVMPointer;
     fn PITUSYABuildAdd(lhs: LLVMPointer, rhs: LLVMPointer) -> LLVMPointer;
     fn PITUSYABuildMul(lhs: LLVMPointer, rhs: LLVMPointer) -> LLVMPointer;
@@ -23,19 +23,34 @@ extern "C" {
     fn PITUSYABuildDiv(lhs: LLVMPointer, rhs: LLVMPointer) -> LLVMPointer;
 }
 
-pub fn codegen(ast: Ast) -> LLVMPointer {
+pub fn codegen(ast: Ast) {
     let vtable = get_vtable();
     match ast {
-        Ast::LetNode { assignee, value } => {
-            let block = CString::new(assignee.as_str()).unwrap();
-            unsafe {
-                let value = PITUSYAWrapInFunction(generate_ir(*value), block.as_ptr());
-                vtable.insert(assignee, value);
-                value
+        Ast::FunctionNode { proto, body } => {
+            if let Ast::PrototypeNode { name, args } = *proto {
+                let function_name = CString::new(name.as_str()).unwrap();
+                let args_pointers = fetch_arguments(args);
+                let argv: Vec<*const i8> = args_pointers.iter().map(|arg| arg.as_ptr()).collect();
+                unsafe {
+                    let f = PITUSYACreateFunction(function_name.as_ptr(), argv.as_ptr(), argv.len());
+                    body.into_iter().for_each(|i| {
+                        generate_ir(i);
+                    });
+                    vtable.insert(name, f);
+                }
             }
         }
-        _ => unsafe { PITUSYAWrapInFunction(generate_ir(ast), "__anon_expr\0".as_ptr() as *const i8) },
+        _ => todo!(),
     }
+}
+fn fetch_arguments(args: Vec<Ast>) -> Vec<CString> {
+    let mut cstrings = Vec::new();
+    for arg in args {
+        if let Ast::IdentifierNode(arg) = arg {
+            cstrings.push(CString::new(arg.as_str()).unwrap());
+        }
+    }
+    cstrings
 }
 fn generate_ir(ast: Ast) -> LLVMPointer {
     match ast {
@@ -53,6 +68,7 @@ fn generate_ir(ast: Ast) -> LLVMPointer {
                 _ => todo!(),
             }
         }
+        Ast::RetNode(ret) => unsafe { PITUSYABuildRet(generate_ir(*ret)) },
         Ast::UnitNode(unit) => generate_ir(*unit),
         _ => todo!(),
     }
