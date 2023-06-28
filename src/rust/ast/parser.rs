@@ -52,19 +52,22 @@ fn parse_prototype(input: &mut InputFile, definition: bool) -> Ast {
         }
     }
     let mut args = vec![];
-    let mut t = next_token(input).kind;
-    while t != TokenKind::Operator(OperatorKind::RParen) {
-        match t {
+    let mut t = next_token(input);
+    while t.kind != TokenKind::Operator(OperatorKind::RParen) {
+        match t.kind {
             TokenKind::Identifier(_) if name == "main" => {
                 abort_syntax_analysis!(input.get_cursor(), "Main function cannot accept parameters!");
             },
-            TokenKind::Identifier(param) => args.push(Ast::IdentifierNode(param)),
-            TokenKind::Literal(literal) if !definition => args.push(Ast::ValueNode(literal)),
+            TokenKind::Identifier(param) if definition => args.push(Ast::IdentifierNode(param)),
+            _ if !definition => {
+                input.move_back_cursor(t.len);
+                args.push(parse_expression(input));
+            },
             e => {
                 abort_syntax_analysis!(input.get_cursor(), "an identifier", e);
             }
         }
-        t = next_token(input).kind;
+        t = next_token(input);
     }
     Ast::PrototypeNode { name, args }
 }
