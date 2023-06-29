@@ -1,28 +1,15 @@
+pub mod bindings;
+
+use bindings::*;
+
 use std::cell::OnceCell;
 use std::collections::HashMap;
 use std::ffi::CString;
 
-use libc::c_void;
-
 use crate::ast::*;
 use crate::lexer::tokens::*;
 
-type LLVMPointer = *mut c_void;
-
 static mut VTABLE: OnceCell<HashMap<String, LLVMPointer>> = OnceCell::new();
-
-extern "C" {
-    pub fn PITUSYAPreInit();
-    pub fn PITUSYAPostDestroy();
-    fn PITUSYACreateFunction(name: *const i8, argv: *const *const i8, argc: usize) -> LLVMPointer;
-    fn PITUSYACreateVar(value: LLVMPointer, name: *const i8) -> LLVMPointer;
-    fn PITUSYABuildRet(v: LLVMPointer) -> LLVMPointer;
-    fn PITUSYAGenerateFP(n: f64) -> LLVMPointer;
-    fn PITUSYABuildAdd(lhs: LLVMPointer, rhs: LLVMPointer) -> LLVMPointer;
-    fn PITUSYABuildMul(lhs: LLVMPointer, rhs: LLVMPointer) -> LLVMPointer;
-    fn PITUSYABuildSub(lhs: LLVMPointer, rhs: LLVMPointer) -> LLVMPointer;
-    fn PITUSYABuildDiv(lhs: LLVMPointer, rhs: LLVMPointer) -> LLVMPointer;
-}
 
 pub fn codegen(ast: Ast) {
     let vtable = get_vtable();
