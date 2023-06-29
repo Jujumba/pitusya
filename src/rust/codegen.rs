@@ -15,6 +15,7 @@ extern "C" {
     pub fn PITUSYAPreInit();
     pub fn PITUSYAPostDestroy();
     fn PITUSYACreateFunction(name: *const i8, argv: *const *const i8, argc: usize) -> LLVMPointer;
+    fn PITUSYACreateVar(value: LLVMPointer, name: *const i8) -> LLVMPointer;
     fn PITUSYABuildRet(v: LLVMPointer) -> LLVMPointer;
     fn PITUSYAGenerateFP(n: f64) -> LLVMPointer;
     fn PITUSYABuildAdd(lhs: LLVMPointer, rhs: LLVMPointer) -> LLVMPointer;
@@ -58,6 +59,10 @@ fn generate_ir(ast: Ast) -> LLVMPointer {
             LiteralKind::Num(n) => unsafe { PITUSYAGenerateFP(n) },
             _ => todo!("Strings?")
         },
+        Ast::LetNode { assignee, value } => {
+            let assignee_cname = CString::new(assignee.as_str()).unwrap(); // todo
+            unsafe { PITUSYACreateVar(generate_ir(*value), assignee_cname.as_ptr()) }
+        }
         Ast::BinaryNode { left, right, op } => {
             let (lhs, rhs) = (generate_ir(*left), generate_ir(*right));
             match op {
