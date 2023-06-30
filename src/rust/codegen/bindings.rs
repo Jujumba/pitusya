@@ -1,6 +1,6 @@
 use libc::c_void;
 
-pub(super) type LLVMPointer = *mut c_void;
+pub type LLVMPointer = *mut c_void;
 
 extern "C" {
     pub fn PITUSYAPreInit();
