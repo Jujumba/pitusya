@@ -25,7 +25,7 @@ impl Codegenerator {
                     unsafe {
                         let f = PITUSYACreateFunction(function_name.as_ptr(), argv.as_ptr(), argv.len());
                         body.into_iter().for_each(|i| {
-                            self.generate_ir(i);
+                            Self::generate_ir(i);
                         });
                         vtable.insert(name, f);
                     }
@@ -43,7 +43,7 @@ impl Codegenerator {
         }
         cstrings
     }
-    fn generate_ir(&self, ast: Ast) -> LLVMPointer {
+    fn generate_ir(ast: Ast) -> LLVMPointer {
         let vtable = get_vtable();
         match ast {
             Ast::ValueNode(literal) => match literal {
@@ -52,12 +52,12 @@ impl Codegenerator {
             },
             Ast::LetNode { assignee, value } => {
                 let assignee_cname = CString::new(assignee.as_str()).unwrap(); // todo
-                let var = unsafe { PITUSYACreateVar(self.generate_ir(*value), assignee_cname.as_ptr()) };
+                let var = unsafe { PITUSYACreateVar(Self::generate_ir(*value), assignee_cname.as_ptr()) };
                 vtable.insert(assignee, var); // todo
                 var
             }
             Ast::BinaryNode { left, right, op } => {
-                let (lhs, rhs) = (self.generate_ir(*left), self.generate_ir(*right));
+                let (lhs, rhs) = (Self::generate_ir(*left), Self::generate_ir(*right));
                 match op {
                     BinaryOperatorKind::Addition => unsafe { PITUSYABuildAdd(lhs, rhs) },
                     BinaryOperatorKind::Multiplication => unsafe { PITUSYABuildMul(lhs, rhs) },
@@ -66,8 +66,8 @@ impl Codegenerator {
                     _ => todo!(),
                 }
             }
-            Ast::RetNode(ret) => unsafe { PITUSYABuildRet(self.generate_ir(*ret)) },
-            Ast::UnitNode(unit) => self.generate_ir(*unit),
+            Ast::RetNode(ret) => unsafe { PITUSYABuildRet(Self::generate_ir(*ret)) },
+            Ast::UnitNode(unit) => Self::generate_ir(*unit),
             _ => todo!(),
         }
     }
