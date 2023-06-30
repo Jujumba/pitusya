@@ -9,6 +9,12 @@ use std::ffi::CString;
 use crate::ast::*;
 use crate::lexer::tokens::*;
 
+macro_rules! cstr {
+    ($string: expr) => {
+        CString::new($string.as_str()).unwrap() 
+    };
+}
+
 static mut VTABLE: OnceCell<HashMap<String, LLVMPointer>> = OnceCell::new();
 
 pub struct Codegenerator;
@@ -19,11 +25,11 @@ impl Codegenerator {
         match ast {
             Ast::FunctionNode { proto, body } => {
                 if let Ast::PrototypeNode { name, args } = *proto {
-                    let function_name = CString::new(name.as_str()).unwrap();
+                    let function_cname = cstr!(name);
                     let args_pointers = self.fetch_arguments(args);
                     let argv: Vec<*const i8> = args_pointers.iter().map(|arg| arg.as_ptr()).collect();
                     unsafe {
-                        let f = PITUSYACreateFunction(function_name.as_ptr(), argv.as_ptr(), argv.len());
+                        let f = PITUSYACreateFunction(function_cname.as_ptr(), argv.as_ptr(), argv.len());
                         body.into_iter().for_each(|i| {
                             Self::generate_ir(i);
                         });
@@ -59,11 +65,11 @@ impl Codegenerator {
                         std::process::exit(18);
                     }
                 };
-                let cname = CString::new(ident.as_str()).unwrap(); // todo: extract to macro
+                let cname = cstr!(ident);
                 unsafe { PITUSYALoadVariable(v, cname.as_ptr()) }
             }
             Ast::LetNode { assignee, value } => {
-                let assignee_cname = CString::new(assignee.as_str()).unwrap(); // todo
+                let assignee_cname = cstr!(assignee);
                 let var = unsafe { PITUSYACreateVar(Self::generate_ir(*value), assignee_cname.as_ptr()) };
                 vtable.insert(assignee, var); // todo
                 var
