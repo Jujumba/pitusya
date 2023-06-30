@@ -15,7 +15,7 @@ pub struct Codegenerator;
 
 impl Codegenerator {
     pub fn codegen(&self, ast: Ast) {
-        let vtable = self.get_vtable();
+        let vtable = get_vtable();
         match ast {
             Ast::FunctionNode { proto, body } => {
                 if let Ast::PrototypeNode { name, args } = *proto {
@@ -44,6 +44,7 @@ impl Codegenerator {
         cstrings
     }
     fn generate_ir(&self, ast: Ast) -> LLVMPointer {
+        let vtable = get_vtable();
         match ast {
             Ast::ValueNode(literal) => match literal {
                 LiteralKind::Num(n) => unsafe { PITUSYAGenerateFP(n) },
@@ -51,7 +52,9 @@ impl Codegenerator {
             },
             Ast::LetNode { assignee, value } => {
                 let assignee_cname = CString::new(assignee.as_str()).unwrap(); // todo
-                unsafe { PITUSYACreateVar(self.generate_ir(*value), assignee_cname.as_ptr()) }
+                let var = unsafe { PITUSYACreateVar(self.generate_ir(*value), assignee_cname.as_ptr()) };
+                vtable.insert(assignee, var); // todo
+                var
             }
             Ast::BinaryNode { left, right, op } => {
                 let (lhs, rhs) = (self.generate_ir(*left), self.generate_ir(*right));
@@ -68,12 +71,6 @@ impl Codegenerator {
             _ => todo!(),
         }
     }
-    fn get_vtable(&self) -> &'static mut HashMap<String, LLVMPointer> {
-        unsafe {
-            VTABLE.get_or_init(HashMap::new);
-            VTABLE.get_mut().unwrap()
-        }
-    }
 }
 impl Drop for Codegenerator {
     fn drop(&mut self) {
@@ -84,5 +81,11 @@ impl Default for Codegenerator {
     fn default() -> Self {
         unsafe { PITUSYAPreInit() };
         Self {}
+    }
+}
+fn get_vtable() -> &'static mut HashMap<String, LLVMPointer> {
+    unsafe {
+        VTABLE.get_or_init(HashMap::new);
+        VTABLE.get_mut().unwrap()
     }
 }
