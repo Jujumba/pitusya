@@ -32,8 +32,10 @@ LLVMValueRef PITUSYACreateFunction(const char* name, const char** argn, size_t a
     }
     LLVMBasicBlockRef entryBlock = LLVMAppendBasicBlockInContext(CONTEXT, function, "entry");
     LLVMPositionBuilderAtEnd(BUILDER, entryBlock);
-    // LLVMVerifyFunction(function, LLVMAbortProcessAction); // todo: extract to separate function
     return function;
+}
+void PITUSYACheckFunction(LLVMValueRef function) {
+    LLVMVerifyFunction(function, LLVMAbortProcessAction);
 }
 LLVMValueRef PITUSYACreateVar(LLVMValueRef value, const char* name) {
     LLVMValueRef var = LLVMBuildAlloca(BUILDER, LLVMDoubleTypeInContext(CONTEXT), name);

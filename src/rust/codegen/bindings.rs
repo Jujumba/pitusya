@@ -5,6 +5,7 @@ pub type LLVMPointer = *mut c_void;
 extern "C" {
     pub fn PITUSYAPreInit();
     pub fn PITUSYAPostDestroy();
+    pub fn PITUSYACheckFunction(function: LLVMPointer);
     pub fn PITUSYACreateFunction(name: *const i8, argv: *const *const i8, argc: usize) -> LLVMPointer;
     pub fn PITUSYACreateVar(value: LLVMPointer, name: *const i8) -> LLVMPointer;
     pub fn PITUSYABuildRet(v: LLVMPointer) -> LLVMPointer;

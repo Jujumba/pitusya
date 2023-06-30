@@ -27,6 +27,7 @@ impl Codegenerator {
                         body.into_iter().for_each(|i| {
                             Self::generate_ir(i);
                         });
+                        PITUSYACheckFunction(f);
                         vtable.insert(name, f);
                     }
                 }
