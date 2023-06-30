@@ -42,6 +42,9 @@ LLVMValueRef PITUSYACreateVar(LLVMValueRef value, const char* name) {
     LLVMBuildStore(BUILDER, value, var);
     return var;
 }
+LLVMValueRef PITUSYALoadVariable(LLVMValueRef v, const char* name) {
+    return LLVMBuildLoad2(BUILDER, LLVMDoubleTypeInContext(CONTEXT), v, name);
+}
 LLVMValueRef PITUSYABuildRet(LLVMValueRef v) {
     return LLVMBuildRet(BUILDER, v);
 }
