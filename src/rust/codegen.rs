@@ -50,6 +50,15 @@ impl Codegenerator {
                 LiteralKind::Num(n) => unsafe { PITUSYAGenerateFP(n) },
                 _ => todo!("Strings?"),
             },
+            Ast::IdentifierNode(ident) => {
+                match vtable.get(&ident) {
+                    Some(var) => *var,
+                    _ => {
+                        eprintln!("No variable {ident}. Consider creating it"); // todo: a proper macro (?)
+                        std::process::exit(18);
+                    }
+                }
+            }
             Ast::LetNode { assignee, value } => {
                 let assignee_cname = CString::new(assignee.as_str()).unwrap(); // todo
                 let var = unsafe { PITUSYACreateVar(Self::generate_ir(*value), assignee_cname.as_ptr()) };
