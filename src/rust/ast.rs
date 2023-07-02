@@ -25,13 +25,15 @@ pub enum Ast {
         condition: Box<Ast>,
         body: Vec<Ast>
     },
-    PrototypeNode {
-        name: String,
-        args: Vec<Ast>
-    },
+    CallNode(Proto),
     FunctionNode {
-        proto: Box<Ast>,
+        proto: Proto,
         body: Vec<Ast>
     },
     RetNode(Box<Ast>)
+}
+#[derive(Debug, PartialEq)]
+pub struct Proto {
+    pub name: String,
+    pub args: Vec<Ast>
 }

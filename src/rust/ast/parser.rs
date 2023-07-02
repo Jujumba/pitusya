@@ -3,21 +3,23 @@ use crate::input::InputFile;
 use crate::lexer::next_token;
 use crate::lexer::tokens::*;
 
+use super::Proto;
+
 macro_rules! abort_syntax_analysis {
     ($pos: expr) => {
         eprintln!("Compilation error at position {}", $pos);
-        std::process::exit(18);
+        ::std::process::exit(18);
     };
     ($pos:expr, $msg:expr) => {
         eprintln!("Compilation error at position {}\n\t{}", $pos, $msg);
-        std::process::exit(18);
+        ::std::process::exit(18);
     };
     ($pos: expr, $expected: expr, $error: expr) => {
         eprintln!(
             "Compilation error at position {}:\n\tExpected {}, but got {:?}",
             $pos, $expected, $error
         );
-        std::process::exit(18);
+        ::std::process::exit(18);
     };
 }
 
@@ -26,7 +28,7 @@ pub fn parse(input: &mut InputFile) -> Vec<Ast> {
     loop {
         match next_token(input).kind {
             TokenKind::Keyword(KeywordKind::Fn) => ast.push(Ast::FunctionNode {
-                proto: Box::new(parse_prototype(input, true)),
+                proto: parse_prototype(input, true),
                 body: parse_block(input)
             }),
             TokenKind::EOF => break,
@@ -37,7 +39,7 @@ pub fn parse(input: &mut InputFile) -> Vec<Ast> {
     }
     ast
 }
-fn parse_prototype(input: &mut InputFile, definition: bool) -> Ast {
+fn parse_prototype(input: &mut InputFile, definition: bool) -> Proto {
     let name_token = next_token(input);
     let name = match name_token.kind {
         TokenKind::Identifier(name) => name,
@@ -69,7 +71,7 @@ fn parse_prototype(input: &mut InputFile, definition: bool) -> Ast {
         }
         t = next_token(input);
     }
-    Ast::PrototypeNode { name, args }
+    Proto { name, args }
 }
 fn parse_block(input: &mut InputFile) -> Vec<Ast> {
     let curly = next_token(input);
@@ -149,7 +151,7 @@ fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
     match lhs_token.kind {
         TokenKind::Identifier(_) => {
             input.move_back_cursor(lhs_token.len); // todo: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            fetch_ident_or_proto(input)
+            fetch_ident_or_call(input)
         }
         TokenKind::Literal(l) => Ast::ValueNode(l),
         TokenKind::Operator(OperatorKind::LParen) => Ast::UnitNode(Box::new(parse_unit_expr(input))),
@@ -158,7 +160,7 @@ fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
         }
     }
 }
-fn fetch_ident_or_proto(input: &mut InputFile) -> Ast {
+fn fetch_ident_or_call(input: &mut InputFile) -> Ast {
     let name_token = next_token(input);
     let name = match name_token.kind {
         TokenKind::Identifier(i) => i,
@@ -172,7 +174,7 @@ fn fetch_ident_or_proto(input: &mut InputFile) -> Ast {
         return Ast::IdentifierNode(name);
     };
     input.move_back_cursor(name_token.len);
-    parse_prototype(input, false)
+    Ast::CallNode(parse_prototype(input, false))
 }
 fn parse_let_expr(input: &mut InputFile) -> Ast {
     let token = next_token(input);
