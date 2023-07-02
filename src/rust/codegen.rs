@@ -2,7 +2,7 @@ mod bindings;
 
 use bindings::*;
 
-use std::cell::OnceCell;
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ffi::CString;
 
@@ -15,50 +15,49 @@ macro_rules! cstr {
     };
 }
 
-static mut VTABLE: OnceCell<HashMap<String, LLVMPointer>> = OnceCell::new();
-
-pub struct Codegenerator;
+pub struct Codegenerator {
+    vtable: RefCell<HashMap<String, LLVMPointer>>
+}
 
 impl Codegenerator {
     pub fn codegen(&self, ast: Ast) {
-        let vtable = get_vtable();
         match ast {
             Ast::FunctionNode { proto, body } => {
-                if let Ast::PrototypeNode { name, args } = *proto {
-                    let function_cname = cstr!(name);
-                    let args_pointers = self.fetch_arguments(args);
-                    let argv: Vec<*const i8> = args_pointers.iter().map(|arg| arg.as_ptr()).collect();
-                    unsafe {
-                        let f = PITUSYACreateFunction(function_cname.as_ptr(), argv.as_ptr(), argv.len());
-                        body.into_iter().for_each(|i| {
-                            Self::generate_ir(i);
-                        });
-                        PITUSYACheckFunction(f);
-                        vtable.insert(name, f);
-                    }
-                }
+                let function_name = cstr!(proto.name);
+                let function = unsafe { PITUSYACreateFunction(function_name.as_ptr(), proto.args.len()) };
+
+                let mut named_values = HashMap::new();
+                Self::set_arguments(function, proto.args, &mut named_values);
+
+                body.into_iter().for_each(|ast| {
+                    Self::generate_ir(ast, &mut named_values);
+                });
+
+                unsafe { PITUSYACheckFunction(function) }
+                self.vtable.borrow_mut().insert(proto.name, function);
             }
             _ => todo!(),
         }
     }
-    fn fetch_arguments(&self, args: Vec<Ast>) -> Vec<CString> {
-        let mut cstrings = Vec::new();
-        for arg in args {
+    fn set_arguments(function: LLVMPointer, args: Vec<Ast>, placeholder: &mut HashMap<String, LLVMPointer>) {
+        for (i, arg) in args.into_iter().enumerate() {
             if let Ast::IdentifierNode(arg) = arg {
-                cstrings.push(CString::new(arg.as_str()).unwrap());
+                let param = unsafe {
+                    let arg = cstr!(arg);
+                    PITUSYASetParam(function, arg.as_ptr(), i)
+                };
+                placeholder.insert(arg, param); 
             }
         }
-        cstrings
     }
-    fn generate_ir(ast: Ast) -> LLVMPointer {
-        let vtable = get_vtable();
+    fn generate_ir(ast: Ast, named_values: &mut HashMap<String, LLVMPointer>) -> LLVMPointer {
         match ast {
             Ast::ValueNode(literal) => match literal {
                 LiteralKind::Num(n) => unsafe { PITUSYAGenerateFP(n) },
                 _ => todo!("Strings?"),
             },
             Ast::IdentifierNode(ident) => {
-                let v = match vtable.get(&ident) {
+                let v = match named_values.get(&ident) {
                     Some(var) => *var,
                     _ => {
                         eprintln!("No variable {ident}. Consider creating it"); // todo: a proper macro (?)
@@ -70,12 +69,12 @@ impl Codegenerator {
             }
             Ast::LetNode { assignee, value } => {
                 let assignee_cname = cstr!(assignee);
-                let var = unsafe { PITUSYACreateVar(Self::generate_ir(*value), assignee_cname.as_ptr()) };
-                vtable.insert(assignee, var); // todo
+                let var = unsafe { PITUSYACreateVar(Self::generate_ir(*value, named_values), assignee_cname.as_ptr()) };
+                named_values.insert(assignee, var);
                 var
             }
             Ast::BinaryNode { left, right, op } => {
-                let (lhs, rhs) = (Self::generate_ir(*left), Self::generate_ir(*right));
+                let (lhs, rhs) = (Self::generate_ir(*left, named_values), Self::generate_ir(*right, named_values));
                 match op {
                     BinaryOperatorKind::Addition => unsafe { PITUSYABuildAdd(lhs, rhs) },
                     BinaryOperatorKind::Multiplication => unsafe { PITUSYABuildMul(lhs, rhs) },
@@ -84,8 +83,8 @@ impl Codegenerator {
                     _ => todo!(),
                 }
             }
-            Ast::RetNode(ret) => unsafe { PITUSYABuildRet(Self::generate_ir(*ret)) },
-            Ast::UnitNode(unit) => Self::generate_ir(*unit),
+            Ast::RetNode(ret) => unsafe { PITUSYABuildRet(Self::generate_ir(*ret, named_values)) },
+            Ast::UnitNode(unit) => Self::generate_ir(*unit, named_values),
             _ => todo!(),
         }
     }
@@ -98,12 +97,8 @@ impl Drop for Codegenerator {
 impl Default for Codegenerator {
     fn default() -> Self {
         unsafe { PITUSYAPreInit() };
-        Self {}
-    }
-}
-fn get_vtable() -> &'static mut HashMap<String, LLVMPointer> {
-    unsafe {
-        VTABLE.get_or_init(HashMap::new);
-        VTABLE.get_mut().unwrap()
+        Self {
+            vtable: RefCell::new(HashMap::new())
+        }
     }
 }

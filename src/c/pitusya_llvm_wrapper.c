@@ -21,18 +21,19 @@ void PITUSYAPostDestroy() {
     LLVMDisposeModule(MODULE);
     LLVMContextDispose(CONTEXT);
 }
-LLVMValueRef PITUSYACreateFunction(const char* name, const char** argn, size_t argc) {
+LLVMValueRef PITUSYACreateFunction(const char* name, size_t argc) {
     LLVMTypeRef args[argc];
     for (size_t i = 0; i < argc; ++i) {
         args[i] = LLVMDoubleTypeInContext(CONTEXT);
     }
     LLVMValueRef function = LLVMAddFunction(MODULE, name, LLVMFunctionType(LLVMDoubleTypeInContext(CONTEXT), args, argc, 0));
-    for (size_t i = 0; i < argc; ++i) {
-        LLVMSetValueName2(LLVMGetParam(function, i), argn[i], strlen(argn[i]));
-    }
     LLVMBasicBlockRef entryBlock = LLVMAppendBasicBlockInContext(CONTEXT, function, "entry");
     LLVMPositionBuilderAtEnd(BUILDER, entryBlock);
     return function;
+}
+LLVMValueRef PITUSYASetParam(LLVMValueRef function, const char* argn, size_t n) {
+    LLVMSetValueName2(LLVMGetParam(function, n), argn, strlen(argn));
+    return LLVMGetParam(function, n);
 }
 void PITUSYACheckFunction(LLVMValueRef function) {
     LLVMVerifyFunction(function, LLVMAbortProcessAction);
