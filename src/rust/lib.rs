@@ -63,6 +63,6 @@ mod tests {
         assert!(matches!(ast[0], Ast::IfNode { .. }))
     }
     #[test]
-    #[ignore = "Does all that CI configuration head ache worth it, since I dont need to test anymore?.."]
+    #[ignore = "Does all that CI configuration headache worth it, since I dont need to test anymore?.."]
     fn one_more_thing() {}
 }
