@@ -23,8 +23,10 @@ impl Codegenerator {
     pub fn codegen(&self, ast: Ast) {
         match ast {
             Ast::FunctionNode { proto, body } => {
-                let function_name = cstr!(proto.name);
-                let function = unsafe { PITUSYACreateFunction(function_name.as_ptr(), proto.args.len()) };
+                let function = unsafe { 
+                    let function_name = cstr!(proto.name);
+                    PITUSYACreateFunction(function_name.as_ptr(), proto.args.len())
+                };
 
                 let mut named_values = HashMap::new();
                 Self::set_arguments(function, proto.args, &mut named_values);
@@ -57,21 +59,22 @@ impl Codegenerator {
                 _ => todo!("Strings?"),
             },
             Ast::IdentifierNode(ident) => {
-                let v = match named_values.get(&ident) {
+                match named_values.get(&ident) {
                     Some(var) => *var,
                     _ => {
                         eprintln!("No variable {ident}. Consider creating it"); // todo: a proper macro (?)
                         std::process::exit(18);
                     }
-                };
-                let cname = cstr!(ident);
-                unsafe { PITUSYALoadVariable(v, cname.as_ptr()) }
+                }
             }
             Ast::LetNode { assignee, value } => {
                 let assignee_cname = cstr!(assignee);
-                let var = unsafe { PITUSYACreateVar(Self::generate_ir(*value, named_values), assignee_cname.as_ptr()) };
-                named_values.insert(assignee, var);
+                let var = unsafe {
+                    PITUSYACreateVar(Self::generate_ir(*value, named_values), assignee_cname.as_ptr())
+                };
+                named_values.insert(assignee, unsafe { PITUSYALoadVariable(var, assignee_cname.as_ptr()) });
                 var
+
             }
             Ast::BinaryNode { left, right, op } => {
                 let (lhs, rhs) = (Self::generate_ir(*left, named_values), Self::generate_ir(*right, named_values));
