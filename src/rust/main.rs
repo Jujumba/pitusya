@@ -1,6 +1,8 @@
-use pitusya::input::InputFile;
+use pitusya::*;
 
 fn main() {
-    let mut titi = InputFile::new(String::from("1 == !1;"));
-    println!("{:#?}", pitusya::ast::parser::parse(&mut titi));
+    let mut titi = input::InputFile::new(String::from("fn bibix(a) {let b = a + 1; ret b + 2;}"));
+    let cc = codegen::Codegenerator::default();
+    let asts = pitusya::ast::parser::parse(&mut titi);
+    asts.into_iter().for_each(|ast| cc.codegen(ast));
 }

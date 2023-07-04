@@ -1,17 +1,17 @@
 mod bindings;
 
-use bindings::*;
-
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ffi::CString;
+
+use bindings::*;
 
 use crate::ast::*;
 use crate::lexer::tokens::*;
 
 macro_rules! cstr {
     ($string: expr) => {
-        CString::new($string.as_str()).unwrap() 
+        CString::new($string.as_str()).unwrap()
     };
 }
 
@@ -23,7 +23,7 @@ impl Codegenerator {
     pub fn codegen(&self, ast: Ast) {
         match ast {
             Ast::FunctionNode { proto, body } => {
-                let function = unsafe { 
+                let function = unsafe {
                     let function_name = cstr!(proto.name);
                     PITUSYACreateFunction(function_name.as_ptr(), proto.args.len())
                 };
@@ -38,7 +38,7 @@ impl Codegenerator {
                 unsafe { PITUSYACheckFunction(function) }
                 self.vtable.borrow_mut().insert(proto.name, function);
             }
-            _ => todo!(),
+            _ => todo!()
         }
     }
     fn set_arguments(function: LLVMPointer, args: Vec<Ast>, placeholder: &mut HashMap<String, LLVMPointer>) {
@@ -48,7 +48,7 @@ impl Codegenerator {
                     let arg = cstr!(arg);
                     PITUSYASetParam(function, arg.as_ptr(), i)
                 };
-                placeholder.insert(arg, param); 
+                placeholder.insert(arg, param);
             }
         }
     }
@@ -56,7 +56,7 @@ impl Codegenerator {
         match ast {
             Ast::ValueNode(literal) => match literal {
                 LiteralKind::Num(n) => unsafe { PITUSYAGenerateFP(n) },
-                _ => todo!("Strings?"),
+                _ => todo!("Strings?")
             },
             Ast::IdentifierNode(ident) => {
                 match named_values.get(&ident) {
@@ -70,11 +70,11 @@ impl Codegenerator {
             Ast::LetNode { assignee, value } => {
                 let assignee_cname = cstr!(assignee);
                 let var = unsafe {
-                    PITUSYACreateVar(Self::generate_ir(*value, named_values), assignee_cname.as_ptr())
+                    let var = PITUSYACreateVar(Self::generate_ir(*value, named_values), assignee_cname.as_ptr());
+                    PITUSYALoadVariable(var, assignee_cname.as_ptr())
                 };
-                named_values.insert(assignee, unsafe { PITUSYALoadVariable(var, assignee_cname.as_ptr()) });
+                named_values.insert(assignee, var);
                 var
-
             }
             Ast::BinaryNode { left, right, op } => {
                 let (lhs, rhs) = (Self::generate_ir(*left, named_values), Self::generate_ir(*right, named_values));
@@ -83,12 +83,12 @@ impl Codegenerator {
                     BinaryOperatorKind::Multiplication => unsafe { PITUSYABuildMul(lhs, rhs) },
                     BinaryOperatorKind::Subtraction => unsafe { PITUSYABuildSub(lhs, rhs) },
                     BinaryOperatorKind::Division => unsafe { PITUSYABuildDiv(lhs, rhs) },
-                    _ => todo!(),
+                    _ => todo!()
                 }
             }
             Ast::RetNode(ret) => unsafe { PITUSYABuildRet(Self::generate_ir(*ret, named_values)) },
             Ast::UnitNode(unit) => Self::generate_ir(*unit, named_values),
-            _ => todo!(),
+            _ => todo!()
         }
     }
 }

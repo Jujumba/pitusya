@@ -1,9 +1,8 @@
+use super::Proto;
 use crate::ast::Ast;
 use crate::input::InputFile;
 use crate::lexer::next_token;
 use crate::lexer::tokens::*;
-
-use super::Proto;
 
 macro_rules! abort_syntax_analysis {
     ($pos: expr) => {
@@ -59,12 +58,12 @@ fn parse_prototype(input: &mut InputFile, definition: bool) -> Proto {
         match t.kind {
             TokenKind::Identifier(_) if name == "main" => {
                 abort_syntax_analysis!(input.get_cursor(), "Main function cannot accept parameters!");
-            },
+            }
             TokenKind::Identifier(param) if definition => args.push(Ast::IdentifierNode(param)),
             _ if !definition => {
                 input.move_back_cursor(t.len);
                 args.push(parse_expression(input));
-            },
+            }
             e => {
                 abort_syntax_analysis!(input.get_cursor(), "an identifier", e);
             }

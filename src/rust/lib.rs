@@ -3,7 +3,6 @@ pub mod codegen;
 pub mod input;
 pub mod lexer;
 
-
 #[cfg(test)]
 mod tests {
     use crate::ast::{parser, Ast};
