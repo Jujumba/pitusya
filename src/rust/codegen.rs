@@ -40,9 +40,7 @@ impl Cg {
                 self.vtable.borrow_mut().insert(proto.name, function);
             }
             Ast::EOF => (),
-            _ => {
-                abort!("Please report how you have bypassed the parser");
-            }
+            _ => abort!("Please report how you have bypassed the parser")
         }
     }
     fn set_arguments(function: LLVMPointer, args: Vec<Ast>, placeholder: &mut HashMap<String, LLVMPointer>) {
@@ -65,9 +63,7 @@ impl Cg {
             Ast::IdentifierNode(ident) => {
                 match named_values.get(&ident) {
                     Some(var) => *var,
-                    _ => {
-                        abort!(format!("No variable {ident}. Consider creating it"));
-                    }
+                    _ => abort!(format!("No variable {ident}. Consider creating it"))
                 }
             }
             Ast::LetNode { assignee, value } => {

@@ -1,4 +1,5 @@
 use super::Proto;
+
 use crate::abort;
 use crate::ast::Ast;
 use crate::input::InputFile;
@@ -7,17 +8,17 @@ use crate::lexer::tokens::*;
 
 macro_rules! abort_syntax_analysis {
     ($pos: expr) => {
-        abort!(format!("Compilation error at position {}", $pos));
+        abort!(format!("Compilation error at position {}", $pos))
     };
     ($pos:expr, $msg:expr) => {
-        abort!(format!("Compilation error at position {}\n\t{}", $pos, $msg));
+        abort!(format!("Compilation error at position {}\n\t{}", $pos, $msg))
     };
     ($pos: expr, $expected: expr, $error: expr) => {
         abort!(format!(
             "Compilation error at position {}:\n\tExpected {}, but got {:?}",
             $pos, $expected, $error
-        ));
-    };
+        ))
+    }
 }
 
 pub fn parse(input: &mut InputFile) -> Vec<Ast> {
@@ -29,9 +30,7 @@ pub fn parse(input: &mut InputFile) -> Vec<Ast> {
                 body: parse_block(input),
             }),
             TokenKind::EOF => break,
-            _ => {
-                abort_syntax_analysis!(input.get_cursor()); // todo
-            }
+            _ => abort_syntax_analysis!(input.get_cursor()) // todo
         }
     }
     ast
@@ -46,9 +45,7 @@ fn parse_prototype(input: &mut InputFile, definition: bool) -> Proto {
     };
     match next_token(input).kind {
         TokenKind::Operator(OperatorKind::LParen) => (),
-        e => {
-            abort_syntax_analysis!(input.get_cursor(), "`(`", e);
-        }
+        e => abort_syntax_analysis!(input.get_cursor(), "`(`", e)
     }
     let mut args = vec![];
     let mut t = next_token(input);
@@ -62,9 +59,7 @@ fn parse_prototype(input: &mut InputFile, definition: bool) -> Proto {
                 input.move_back_cursor(t.len);
                 args.push(parse_expression(input));
             }
-            e => {
-                abort_syntax_analysis!(input.get_cursor(), "an identifier", e);
-            }
+            e => abort_syntax_analysis!(input.get_cursor(), "an identifier", e)
         }
         t = next_token(input);
     }
@@ -134,13 +129,9 @@ fn parse_unit_expr(input: &mut InputFile) -> Ast {
                 op,
             },
             OperatorKind::RParen => ast,
-            e => {
-                abort_syntax_analysis!(input.get_cursor(), "a binary operator or `)`", e);
-            }
+            e => abort_syntax_analysis!(input.get_cursor(), "a binary operator or `)`", e)
         },
-        e => {
-            abort_syntax_analysis!(input.get_cursor(), "`)`", e);
-        }
+        e => abort_syntax_analysis!(input.get_cursor(), "`)`", e)
     }
 }
 fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
@@ -152,18 +143,14 @@ fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
         }
         TokenKind::Literal(l) => Ast::ValueNode(l),
         TokenKind::Operator(OperatorKind::LParen) => Ast::UnitNode(Box::new(parse_unit_expr(input))),
-        e => {
-            abort_syntax_analysis!(input.get_cursor(), expected, e);
-        }
+        e => abort_syntax_analysis!(input.get_cursor(), expected, e)
     }
 }
 fn fetch_ident_or_call(input: &mut InputFile) -> Ast {
     let name_token = next_token(input);
     let name = match name_token.kind {
         TokenKind::Identifier(i) => i,
-        e => {
-            abort_syntax_analysis!(input.get_cursor(), "an identifier", e); // todo: return Result<Ast, ?>
-        }
+        e => abort_syntax_analysis!(input.get_cursor(), "an identifier", e)
     };
     let paren = next_token(input);
     input.move_back_cursor(paren.len);
@@ -181,12 +168,8 @@ fn parse_let_expr(input: &mut InputFile) -> Ast {
                 assignee,
                 value: Box::new(parse_expression(input)),
             },
-            e => {
-                abort_syntax_analysis!(input.get_cursor(), "`=`", e);
-            }
+            e => abort_syntax_analysis!(input.get_cursor(), "`=`", e)
         },
-        e => {
-            abort_syntax_analysis!(input.get_cursor(), "an identifier", e);
-        }
+        e => abort_syntax_analysis!(input.get_cursor(), "an identifier", e)
     }
 }

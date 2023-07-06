@@ -5,10 +5,10 @@ pub mod lexer;
 
 #[macro_export]
 macro_rules! abort {
-    ($err:expr) => {
+    ($err:expr) => {{
         eprintln!("{}", $err);
         ::std::process::exit(18)
-    };
+    }};
 }
 
 #[cfg(test)]
@@ -53,7 +53,7 @@ mod tests {
         let mut input = InputFile::new(String::from(
             "while 1 == 1; {
             let hello = \"world\";
-        }"
+        }",
         ));
         let ast = parser::parse(&mut input);
         assert!(matches!(ast[0], Ast::WhileNode { .. }));
@@ -64,7 +64,7 @@ mod tests {
         let mut input = InputFile::new(String::from(
             "if 1 == 2; {
                 let wow = \"uWu\";
-            }"
+            }",
         ));
         let ast = parser::parse(&mut input);
         assert!(matches!(ast[0], Ast::IfNode { .. }))
