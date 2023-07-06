@@ -1,4 +1,5 @@
 use super::Proto;
+use crate::abort;
 use crate::ast::Ast;
 use crate::input::InputFile;
 use crate::lexer::next_token;
@@ -6,19 +7,16 @@ use crate::lexer::tokens::*;
 
 macro_rules! abort_syntax_analysis {
     ($pos: expr) => {
-        eprintln!("Compilation error at position {}", $pos);
-        ::std::process::exit(18);
+        abort!(format!("Compilation error at position {}", $pos));
     };
     ($pos:expr, $msg:expr) => {
-        eprintln!("Compilation error at position {}\n\t{}", $pos, $msg);
-        ::std::process::exit(18);
+        abort!(format!("Compilation error at position {}\n\t{}", $pos, $msg));
     };
     ($pos: expr, $expected: expr, $error: expr) => {
-        eprintln!(
+        abort!(format!(
             "Compilation error at position {}:\n\tExpected {}, but got {:?}",
             $pos, $expected, $error
-        );
-        ::std::process::exit(18);
+        ));
     };
 }
 
@@ -28,7 +26,7 @@ pub fn parse(input: &mut InputFile) -> Vec<Ast> {
         match next_token(input).kind {
             TokenKind::Keyword(KeywordKind::Fn) => ast.push(Ast::FunctionNode {
                 proto: parse_prototype(input, true),
-                body: parse_block(input)
+                body: parse_block(input),
             }),
             TokenKind::EOF => break,
             _ => {
@@ -83,11 +81,11 @@ fn parse_block(input: &mut InputFile) -> Vec<Ast> {
         match t.kind {
             TokenKind::Keyword(KeywordKind::If) => body.push(Ast::IfNode {
                 condition: Box::new(parse_expression(input)),
-                body: parse_block(input)
+                body: parse_block(input),
             }),
             TokenKind::Keyword(KeywordKind::While) => body.push(Ast::WhileNode {
                 condition: Box::new(parse_expression(input)),
-                body: parse_block(input)
+                body: parse_block(input),
             }),
             TokenKind::Keyword(KeywordKind::Let) => body.push(parse_let_expr(input)),
             TokenKind::Identifier(_) | TokenKind::Literal(_) | TokenKind::Operator(OperatorKind::LParen) => {
@@ -114,7 +112,7 @@ fn parse_expression(input: &mut InputFile) -> Ast {
             OperatorKind::Binary(op) => Ast::BinaryNode {
                 left: Box::new(ast),
                 right: Box::new(parse_expression(input)),
-                op
+                op,
             },
             OperatorKind::Semicol => ast,
             e => {
@@ -133,7 +131,7 @@ fn parse_unit_expr(input: &mut InputFile) -> Ast {
             OperatorKind::Binary(op) => Ast::BinaryNode {
                 left: Box::new(ast),
                 right: Box::new(parse_unit_expr(input)),
-                op
+                op,
             },
             OperatorKind::RParen => ast,
             e => {
@@ -181,7 +179,7 @@ fn parse_let_expr(input: &mut InputFile) -> Ast {
         TokenKind::Identifier(assignee) => match next_token(input).kind {
             TokenKind::Operator(OperatorKind::Binary(BinaryOperatorKind::Assigment)) => Ast::LetNode {
                 assignee,
-                value: Box::new(parse_expression(input))
+                value: Box::new(parse_expression(input)),
             },
             e => {
                 abort_syntax_analysis!(input.get_cursor(), "`=`", e);

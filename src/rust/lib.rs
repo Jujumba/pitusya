@@ -3,6 +3,14 @@ pub mod codegen;
 pub mod input;
 pub mod lexer;
 
+#[macro_export]
+macro_rules! abort {
+    ($err:expr) => {
+        eprintln!("{}", $err);
+        ::std::process::exit(18)
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use crate::ast::{parser, Ast};

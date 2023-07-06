@@ -6,6 +6,7 @@ use std::ffi::CString;
 
 use bindings::*;
 
+use crate::abort;
 use crate::ast::*;
 use crate::lexer::tokens::*;
 
@@ -38,7 +39,10 @@ impl Cg {
                 unsafe { PITUSYACheckFunction(function) }
                 self.vtable.borrow_mut().insert(proto.name, function);
             }
-            _ => todo!()
+            Ast::EOF => (),
+            _ => {
+                abort!("Please report how you have bypassed the parser");
+            }
         }
     }
     fn set_arguments(function: LLVMPointer, args: Vec<Ast>, placeholder: &mut HashMap<String, LLVMPointer>) {
@@ -62,8 +66,7 @@ impl Cg {
                 match named_values.get(&ident) {
                     Some(var) => *var,
                     _ => {
-                        eprintln!("No variable {ident}. Consider creating it"); // todo: a proper macro (?)
-                        std::process::exit(18);
+                        abort!(format!("No variable {ident}. Consider creating it"));
                     }
                 }
             }
