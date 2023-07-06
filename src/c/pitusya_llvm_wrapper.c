@@ -1,21 +1,35 @@
 #include <llvm-c/Types.h>
 #include <llvm-c/Target.h>
+#include "llvm-c/TargetMachine.h"
 #include <llvm-c/Analysis.h>
 #include "llvm-c/Core.h"
-#include <stdio.h>
+#include "llvm-c/Transforms/PassBuilder.h"
 #include <string.h>
+#include <stdbool.h>
 
 LLVMContextRef CONTEXT = NULL;
 LLVMModuleRef MODULE = NULL;
 LLVMBuilderRef BUILDER = NULL;
+LLVMTargetRef TARGET = NULL;
+LLVMTargetMachineRef TM = NULL;
+LLVMPassBuilderOptionsRef PB = NULL;
 
+static void PITUSYAInitTarget(void) {
+    LLVMInitializeNativeTarget();
+    TARGET = LLVMGetFirstTarget();
+    TM = LLVMCreateTargetMachine(TARGET, LLVMGetDefaultTargetTriple(), NULL, NULL, LLVMCodeGenLevelAggressive, LLVMRelocDefault, LLVMCodeModelDefault);
+}
 void PITUSYAPreInit() {
-    LLVMInitializeAllTargets();
+    PITUSYAInitTarget();
     CONTEXT = LLVMContextCreate();
     MODULE = LLVMModuleCreateWithNameInContext("pitusya module", CONTEXT);
     BUILDER = LLVMCreateBuilderInContext(CONTEXT);
+    PB = LLVMCreatePassBuilderOptions();
+    LLVMPassBuilderOptionsSetVerifyEach(PB, true);
 }
 void PITUSYAPostDestroy() {
+    LLVMRunPasses(MODULE, "sroa,early-cse,simplifycfg,reassociate,mem2reg,instsimplify,instcombine", TM, PB);
+    LLVMDisposePassBuilderOptions(PB);
     LLVMDisposeBuilder(BUILDER);
     LLVMDumpModule(MODULE);
     LLVMDisposeModule(MODULE);
