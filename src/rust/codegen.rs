@@ -15,11 +15,11 @@ macro_rules! cstr {
     };
 }
 
-pub struct Codegenerator {
-    vtable: RefCell<HashMap<String, LLVMPointer>>
+pub struct Cg {
+    vtable: RefCell<HashMap<String, LLVMPointer>>,
 }
 
-impl Codegenerator {
+impl Cg {
     pub fn codegen(&self, ast: Ast) {
         match ast {
             Ast::FunctionNode { proto, body } => {
@@ -56,7 +56,7 @@ impl Codegenerator {
         match ast {
             Ast::ValueNode(literal) => match literal {
                 LiteralKind::Num(n) => unsafe { PITUSYAGenerateFP(n) },
-                _ => todo!("Strings?")
+                _ => todo!("Strings?"),
             },
             Ast::IdentifierNode(ident) => {
                 match named_values.get(&ident) {
@@ -77,31 +77,32 @@ impl Codegenerator {
                 var
             }
             Ast::BinaryNode { left, right, op } => {
-                let (lhs, rhs) = (Self::generate_ir(*left, named_values), Self::generate_ir(*right, named_values));
+                let lhs = Self::generate_ir(*left, named_values);
+                let rhs = Self::generate_ir(*right, named_values);
                 match op {
                     BinaryOperatorKind::Addition => unsafe { PITUSYABuildAdd(lhs, rhs) },
                     BinaryOperatorKind::Multiplication => unsafe { PITUSYABuildMul(lhs, rhs) },
                     BinaryOperatorKind::Subtraction => unsafe { PITUSYABuildSub(lhs, rhs) },
                     BinaryOperatorKind::Division => unsafe { PITUSYABuildDiv(lhs, rhs) },
-                    _ => todo!()
+                    _ => todo!(),
                 }
             }
             Ast::RetNode(ret) => unsafe { PITUSYABuildRet(Self::generate_ir(*ret, named_values)) },
             Ast::UnitNode(unit) => Self::generate_ir(*unit, named_values),
-            _ => todo!()
+            _ => todo!(),
         }
     }
 }
-impl Drop for Codegenerator {
+impl Drop for Cg {
     fn drop(&mut self) {
         unsafe { PITUSYAPostDestroy() };
     }
 }
-impl Default for Codegenerator {
+impl Default for Cg {
     fn default() -> Self {
         unsafe { PITUSYAPreInit() };
         Self {
-            vtable: RefCell::new(HashMap::new())
+            vtable: RefCell::new(HashMap::new()),
         }
     }
 }
