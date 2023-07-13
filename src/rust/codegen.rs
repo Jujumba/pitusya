@@ -56,9 +56,7 @@ impl Cg {
             Ast::LetNode { assignee, value } => {
                 let name = cstr!(assignee);
                 let value = self.generate_ir(*value, named_values);
-                let var = unsafe {
-                    PITUSYACreateVar(value, name.as_ptr())
-                };
+                let var = unsafe { PITUSYACreateVar(value, name.as_ptr()) };
                 named_values.insert(assignee, var);
                 var
             }
@@ -89,14 +87,13 @@ impl Cg {
             Ast::BinaryNode { left, right, op } => {
                 let lhs = self.generate_ir(*left, named_values);
                 let rhs = self.generate_ir(*right, named_values);
-                let derefed_lhs = unsafe {
-                    PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8)
-                };
                 match op {
-                    BinaryOperatorKind::Addition => unsafe { PITUSYABuildAdd(derefed_lhs, rhs) },
-                    BinaryOperatorKind::Multiplication => unsafe { PITUSYABuildMul(derefed_lhs, rhs) },
-                    BinaryOperatorKind::Subtraction => unsafe { PITUSYABuildSub(derefed_lhs, rhs) },
-                    BinaryOperatorKind::Division => unsafe { PITUSYABuildDiv(derefed_lhs, rhs) },
+                    BinaryOperatorKind::Addition => unsafe { PITUSYABuildAdd(PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8), rhs) },
+                    BinaryOperatorKind::Multiplication => unsafe {
+                        PITUSYABuildMul(PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8), rhs)
+                    },
+                    BinaryOperatorKind::Subtraction => unsafe { PITUSYABuildSub(PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8), rhs) },
+                    BinaryOperatorKind::Division => unsafe { PITUSYABuildDiv(PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8), rhs) },
                     BinaryOperatorKind::Assigment => unsafe {
                         PITUSYAAssignToVar(rhs, lhs); // rhs -- value, lhs -- variable
                         lhs
