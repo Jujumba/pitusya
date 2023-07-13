@@ -4,6 +4,7 @@
 #include <llvm-c/Analysis.h>
 #include "llvm-c/Core.h"
 #include "llvm-c/Transforms/PassBuilder.h"
+#include <malloc.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -36,7 +37,7 @@ void PITUSYAPostDestroy() {
     LLVMContextDispose(CONTEXT);
 }
 LLVMValueRef PITUSYACreateFunction(const char* name, size_t argc) {
-    LLVMTypeRef args[argc];
+    LLVMTypeRef* args = malloc(sizeof(LLVMTypeRef) * argc);
     for (size_t i = 0; i < argc; ++i) {
         args[i] = LLVMDoubleTypeInContext(CONTEXT);
     }
@@ -49,15 +50,21 @@ LLVMValueRef PITUSYASetParam(LLVMValueRef function, const char* argn, size_t n) 
     LLVMSetValueName2(LLVMGetParam(function, n), argn, strlen(argn));
     return LLVMGetParam(function, n);
 }
+size_t PITUSYACountArgs(LLVMValueRef function) {
+    return LLVMCountParams(function);
+}
 void PITUSYACheckFunction(LLVMValueRef function) {
     LLVMVerifyFunction(function, LLVMAbortProcessAction);
 }
-LLVMValueRef PITUSYACreateVar(LLVMValueRef value, const char* name) {
+void PITUSYAAssignToVar(LLVMValueRef val, LLVMValueRef var) {
+    LLVMBuildStore(BUILDER, val, var);
+}
+LLVMValueRef PITUSYACreateVar(LLVMValueRef val, const char* name) {
     LLVMValueRef var = LLVMBuildAlloca(BUILDER, LLVMDoubleTypeInContext(CONTEXT), name);
-    LLVMBuildStore(BUILDER, value, var);
+    PITUSYAAssignToVar(val, var);   
     return var;
 }
-LLVMValueRef PITUSYALoadVariable(LLVMValueRef v, const char* name) {
+LLVMValueRef PITUSYADeref(LLVMValueRef v, const char* name) {
     return LLVMBuildLoad2(BUILDER, LLVMDoubleTypeInContext(CONTEXT), v, name);
 }
 LLVMValueRef PITUSYABuildRet(LLVMValueRef v) {
@@ -68,6 +75,9 @@ LLVMValueRef PITUSYAGenerateFP(double n) {
 }
 LLVMValueRef PITUSYAGenerateString(char* s, size_t len) {
     return LLVMConstString(s, len, 0);
+}
+LLVMValueRef PITUSYACallFunction(LLVMValueRef callee, size_t argc, LLVMValueRef *args) {
+    return LLVMBuildCall2(BUILDER, LLVMGlobalGetValueType(callee), callee, args, argc, "calltmp");
 }
 LLVMValueRef PITUSYABuildAdd(LLVMValueRef lhs, LLVMValueRef rhs) {
     return LLVMBuildFAdd(BUILDER, lhs, rhs, "addtmp");
