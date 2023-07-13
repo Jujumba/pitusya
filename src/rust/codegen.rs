@@ -57,8 +57,6 @@ impl Cg {
                 let name = cstr!(assignee);
                 let value = self.generate_ir(*value, named_values);
                 let var = unsafe {
-                    // let var = PITUSYACreateVar(value, name.as_ptr());
-                    // PITUSYALoadVariable(var, name.as_ptr())
                     PITUSYACreateVar(value, name.as_ptr())
                 };
                 named_values.insert(assignee, var);
