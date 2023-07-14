@@ -30,7 +30,7 @@ impl Cg {
                 };
 
                 let mut named_values = HashMap::new();
-                Self::set_arguments(function, proto.args, &mut named_values);
+                self.set_arguments(function, proto.args, &mut named_values);
 
                 body.into_iter().for_each(|ast| {
                     self.generate_ir(ast, &mut named_values);
@@ -106,7 +106,7 @@ impl Cg {
             _ => todo!(),
         }
     }
-    fn set_arguments(function: LLVMPointer, args: Vec<Ast>, placeholder: &mut HashMap<String, LLVMPointer>) {
+    fn set_arguments(&self, function: LLVMPointer, args: Vec<Ast>, placeholder: &mut HashMap<String, LLVMPointer>) {
         for (i, arg) in args.into_iter().enumerate() {
             if let Ast::IdentifierNode(arg) = arg {
                 let param = unsafe {
