@@ -28,6 +28,10 @@ impl Cg {
                     self.contains_main = true;
                 }
 
+                if self.vtable.contains_key(&proto.name) {
+                    abort!(format!("Function {} already exists!", proto.name));
+                }
+
                 let function = unsafe {
                     let function_name = cstr!(proto.name);
                     PITUSYACreateFunction(function_name.as_ptr(), proto.args.len())
