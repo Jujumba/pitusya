@@ -29,7 +29,7 @@ void PITUSYAPreInit() {
     LLVMPassBuilderOptionsSetVerifyEach(PB, true);
 }
 void PITUSYAPostDestroy() {
-    LLVMRunPasses(MODULE, "sroa,early-cse,simplifycfg,reassociate,mem2reg,instsimplify,instcombine", TM, PB);
+    LLVMRunPasses(MODULE, "sroa,early-cse,simplifycfg,reassociate,mem2reg,instsimplify,instcombine,dce", TM, PB);
     LLVMDisposePassBuilderOptions(PB);
     LLVMDisposeBuilder(BUILDER);
     LLVMDumpModule(MODULE);
