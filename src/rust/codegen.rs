@@ -1,6 +1,5 @@
 mod bindings;
 
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ffi::CString;
 
@@ -18,12 +17,17 @@ macro_rules! cstr {
 
 pub struct Cg {
     vtable: HashMap<String, LLVMPointer>,
+    contains_main: bool
 }
 
 impl Cg {
     pub fn codegen(&mut self, ast: Ast) {
         match ast {
             Ast::FunctionNode { proto, body } => {
+                if &proto.name == "main" {
+                    self.contains_main = true;
+                }
+
                 let function = unsafe {
                     let function_name = cstr!(proto.name);
                     PITUSYACreateFunction(function_name.as_ptr(), proto.args.len())
@@ -121,6 +125,9 @@ impl Cg {
 impl Drop for Cg {
     fn drop(&mut self) {
         unsafe { PITUSYAPostDestroy() };
+        if !self.contains_main {
+            abort!("No main function. Consider creating it.");
+        }
     }
 }
 impl Default for Cg {
@@ -128,6 +135,7 @@ impl Default for Cg {
         unsafe { PITUSYAPreInit() };
         Self {
             vtable: HashMap::new(),
+            contains_main: false
         }
     }
 }
