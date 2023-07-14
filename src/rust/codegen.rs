@@ -17,11 +17,11 @@ macro_rules! cstr {
 }
 
 pub struct Cg {
-    vtable: RefCell<HashMap<String, LLVMPointer>>,
+    vtable: HashMap<String, LLVMPointer>,
 }
 
 impl Cg {
-    pub fn codegen(&self, ast: Ast) {
+    pub fn codegen(&mut self, ast: Ast) {
         match ast {
             Ast::FunctionNode { proto, body } => {
                 let function = unsafe {
@@ -37,7 +37,7 @@ impl Cg {
                 });
 
                 unsafe { PITUSYACheckFunction(function) }
-                self.vtable.borrow_mut().insert(proto.name, function);
+                self.vtable.insert(proto.name, function);
             }
             Ast::EOF => (),
             _ => abort!("Please report how you have bypassed the parser"),
@@ -61,7 +61,7 @@ impl Cg {
                 var
             }
             Ast::CallNode(proto) => {
-                let function = match self.vtable.borrow().get(&proto.name) {
+                let function = match self.vtable.get(&proto.name) {
                     Some(f) => *f,
                     _ => abort!(format!("No function {}. Define it before calling", proto.name)),
                 };
@@ -127,7 +127,7 @@ impl Default for Cg {
     fn default() -> Self {
         unsafe { PITUSYAPreInit() };
         Self {
-            vtable: RefCell::new(HashMap::new()),
+            vtable: HashMap::new(),
         }
     }
 }
