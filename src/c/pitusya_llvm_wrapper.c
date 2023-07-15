@@ -37,7 +37,7 @@ void PITUSYAPostDestroy() {
     LLVMContextDispose(CONTEXT);
 }
 LLVMValueRef PITUSYACreateFunction(const char* name, size_t argc) {
-    LLVMTypeRef* args = malloc(sizeof(LLVMTypeRef) * argc);
+    LLVMTypeRef args[argc];
     for (size_t i = 0; i < argc; ++i) {
         args[i] = LLVMDoubleTypeInContext(CONTEXT);
     }
