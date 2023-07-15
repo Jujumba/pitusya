@@ -27,25 +27,10 @@ impl Cg {
                 if &proto.name == "main" {
                     self.contains_main = true;
                 }
-
                 if self.vtable.contains_key(&proto.name) {
                     abort!(format!("Function {} already exists!", proto.name));
                 }
-
-                let function = unsafe {
-                    let function_name = cstr!(proto.name);
-                    PITUSYACreateFunction(function_name.as_ptr(), proto.args.len())
-                };
-
-                let mut named_values = HashMap::new();
-                self.set_arguments(function, proto.args, &mut named_values);
-
-                body.into_iter().for_each(|ast| {
-                    self.generate_ir(ast, &mut named_values);
-                });
-
-                unsafe { PITUSYACheckFunction(function) }
-                self.vtable.insert(proto.name, function);
+                self.create_function(proto, body);
             }
             Ast::EOF => (),
             _ => abort!("Please report how you have bypassed the parser"),
@@ -93,23 +78,44 @@ impl Cg {
                 unsafe { PITUSYACallFunction(function, argc, args.as_mut_ptr()) }
             }
             Ast::BinaryNode { left, right, op } => {
+                // Some awful Rust. AS IS :)
+                let is_lhs_ident = matches!(*left, Ast::IdentifierNode(_));
                 let lhs = self.generate_ir(*left, named_values);
+                let lhs_derefed = if is_lhs_ident{
+                    unsafe { PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8) }
+                } else {
+                    lhs
+                };
+
+                let is_rhs_ident = matches!(*right, Ast::IdentifierNode(_));
                 let rhs = self.generate_ir(*right, named_values);
+                let rhs_derefed = if is_rhs_ident {
+                    unsafe { PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8) }
+                } else {
+                    rhs
+                };
+
                 match op {
-                    BinaryOperatorKind::Addition => unsafe { PITUSYABuildAdd(PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8), rhs) },
-                    BinaryOperatorKind::Multiplication => unsafe {
-                        PITUSYABuildMul(PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8), rhs)
-                    },
-                    BinaryOperatorKind::Subtraction => unsafe { PITUSYABuildSub(PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8), rhs) },
-                    BinaryOperatorKind::Division => unsafe { PITUSYABuildDiv(PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8), rhs) },
+                    BinaryOperatorKind::Addition => unsafe { PITUSYABuildAdd(lhs_derefed, rhs_derefed) },
+                    BinaryOperatorKind::Multiplication => unsafe { PITUSYABuildMul(lhs_derefed, rhs_derefed) },
+                    BinaryOperatorKind::Subtraction => unsafe { PITUSYABuildSub(lhs_derefed, rhs_derefed) },
+                    BinaryOperatorKind::Division => unsafe { PITUSYABuildDiv(lhs_derefed, rhs_derefed) },
+                    BinaryOperatorKind::Comparision(cmp) => unsafe { PITUSYABuildCmp(lhs_derefed, rhs_derefed, cmp.into()) }
                     BinaryOperatorKind::Assigment => unsafe {
-                        PITUSYAAssignToVar(rhs, lhs); // rhs -- value, lhs -- variable
+                        PITUSYAAssignToVar(rhs, lhs);
                         lhs
                     },
-                    BinaryOperatorKind::Comparision(cmp) => unsafe { PITUSYABuildCmp(lhs, rhs, cmp.into()) }
                 }
             }
-            Ast::RetNode(ret) => unsafe { PITUSYABuildRet(self.generate_ir(*ret, named_values)) },
+            Ast::RetNode(ret) => {
+                // Once again. Really bad Rust code.
+                let is_ident = matches!(*ret, Ast::IdentifierNode(_));
+                let mut ret = self.generate_ir(*ret, named_values);
+                if is_ident {
+                    ret = unsafe { PITUSYADeref(ret, "deref\0".as_ptr() as *const i8) }
+                }
+                unsafe { PITUSYABuildRet(ret) }
+            }
             Ast::UnitNode(unit) => self.generate_ir(*unit, named_values),
             _ => todo!(),
         }
@@ -124,6 +130,22 @@ impl Cg {
                 placeholder.insert(arg, param);
             }
         }
+    }
+    fn create_function(&mut self, proto: Proto, body: Vec<Ast>) {
+            let function = unsafe {
+                let function_name = cstr!(proto.name);
+                PITUSYACreateFunction(function_name.as_ptr(), proto.args.len())
+            };
+
+            let mut named_values = HashMap::new();
+            self.set_arguments(function, proto.args, &mut named_values);
+
+            body.into_iter().for_each(|ast| {
+                self.generate_ir(ast, &mut named_values);
+            });
+
+            unsafe { PITUSYACheckFunction(function); }
+            self.vtable.insert(proto.name, function);
     }
 }
 impl Drop for Cg {
