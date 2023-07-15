@@ -28,11 +28,15 @@ pub enum OperatorKind {
 #[derive(Debug, PartialEq)]
 pub enum BinaryOperatorKind {
     Assigment,      // =
-    Comparision,    // ==
     Addition,       // +
     Subtraction,    // -
     Multiplication, // *
     Division,       // /
+    Comparision(ComparisionOpKind)
+}
+#[derive(Debug, PartialEq)]
+pub enum ComparisionOpKind {
+    Equals,         // ==
     Bigger,         // >
     BiggerOrEq,     // >=
     Less,           // <
@@ -55,15 +59,15 @@ impl TryFrom<&str> for OperatorKind {
     type Error = ();
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
-            "<=" => Ok(Self::Binary(BinaryOperatorKind::LessOrEq)),
-            ">=" => Ok(Self::Binary(BinaryOperatorKind::BiggerOrEq)),
-            "==" => Ok(Self::Binary(BinaryOperatorKind::Comparision)),
+            "<=" => Ok(Self::Binary(BinaryOperatorKind::Comparision(ComparisionOpKind::LessOrEq))),
+            ">=" => Ok(Self::Binary(BinaryOperatorKind::Comparision(ComparisionOpKind::BiggerOrEq))),
+            "==" => Ok(Self::Binary(BinaryOperatorKind::Comparision(ComparisionOpKind::Equals))),
             "+" => Ok(Self::Binary(BinaryOperatorKind::Addition)),
             "-" => Ok(Self::Binary(BinaryOperatorKind::Subtraction)),
             "*" => Ok(Self::Binary(BinaryOperatorKind::Multiplication)),
             "/" => Ok(Self::Binary(BinaryOperatorKind::Division)),
-            "<" => Ok(Self::Binary(BinaryOperatorKind::Less)),
-            ">" => Ok(Self::Binary(BinaryOperatorKind::Bigger)),
+            "<" => Ok(Self::Binary(BinaryOperatorKind::Comparision(ComparisionOpKind::Less))),
+            ">" => Ok(Self::Binary(BinaryOperatorKind::Comparision(ComparisionOpKind::Bigger))),
             "=" => Ok(Self::Binary(BinaryOperatorKind::Assigment)),
             ";" => Ok(Self::Semicol),
             "(" => Ok(Self::LParen),
