@@ -40,7 +40,7 @@ impl Cg {
         match ast {
             Ast::ValueNode(literal) => match literal {
                 LiteralKind::Num(n) => unsafe { PITUSYAGenerateFP(n) },
-                _ => todo!("Strings?"),
+                _ => abort!("Strings are not impelemented yet!"),
             },
             Ast::IdentifierNode(ident) => match named_values.get(&ident) {
                 Some(var) => *var,
