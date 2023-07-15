@@ -19,4 +19,5 @@ extern "C" {
     pub fn PITUSYABuildMul(lhs: LLVMPointer, rhs: LLVMPointer) -> LLVMPointer;
     pub fn PITUSYABuildSub(lhs: LLVMPointer, rhs: LLVMPointer) -> LLVMPointer;
     pub fn PITUSYABuildDiv(lhs: LLVMPointer, rhs: LLVMPointer) -> LLVMPointer;
+    pub fn PITUSYABuildCmp(lhs: LLVMPointer, rhs: LLVMPointer, op: i32) -> LLVMPointer;
 }

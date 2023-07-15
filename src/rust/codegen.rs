@@ -106,7 +106,7 @@ impl Cg {
                         PITUSYAAssignToVar(rhs, lhs); // rhs -- value, lhs -- variable
                         lhs
                     },
-                    _ => todo!(),
+                    BinaryOperatorKind::Comparision(cmp) => unsafe { PITUSYABuildCmp(lhs, rhs, cmp.into()) }
                 }
             }
             Ast::RetNode(ret) => unsafe { PITUSYABuildRet(self.generate_ir(*ret, named_values)) },

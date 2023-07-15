@@ -61,7 +61,7 @@ void PITUSYAAssignToVar(LLVMValueRef val, LLVMValueRef var) {
 }
 LLVMValueRef PITUSYACreateVar(LLVMValueRef val, const char* name) {
     LLVMValueRef var = LLVMBuildAlloca(BUILDER, LLVMDoubleTypeInContext(CONTEXT), name);
-    PITUSYAAssignToVar(val, var);   
+    PITUSYAAssignToVar(val, var);
     return var;
 }
 LLVMValueRef PITUSYADeref(LLVMValueRef v, const char* name) {
@@ -90,4 +90,7 @@ LLVMValueRef PITUSYABuildSub(LLVMValueRef lhs, LLVMValueRef rhs) {
 }
 LLVMValueRef PITUSYABuildDiv(LLVMValueRef lhs, LLVMValueRef rhs) {
     return LLVMBuildFDiv(BUILDER, lhs, rhs, "divtmp");
+}
+LLVMValueRef PITUSYABuildCmp(LLVMValueRef lhs, LLVMValueRef rhs, int op) {
+    return LLVMBuildFCmp(BUILDER, op, lhs, rhs, "cmptmp");
 }

@@ -42,6 +42,18 @@ pub enum ComparisionOpKind {
     Less,           // <
     LessOrEq        // <=
 }
+#[allow(clippy::from_over_into)]
+impl Into<i32> for ComparisionOpKind {
+    fn into(self) -> i32 {
+        match self {
+            Self::Equals => 1,
+            Self::Bigger => 2,
+            Self::BiggerOrEq => 3,
+            Self::Less => 4,
+            Self::LessOrEq => 5
+        }
+    }
+}
 impl TryFrom<&str> for KeywordKind {
     type Error = ();
     fn try_from(value: &str) -> Result<Self, Self::Error> {
