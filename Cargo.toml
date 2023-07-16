@@ -11,7 +11,7 @@ license = "MIT"
 path = "src/rust/lib.rs"
 
 [[bin]]
-name = "pitusyac"
+name = "pitusya"
 path = "src/rust/main.rs"
 
 [dependencies]
