@@ -1,0 +1,6 @@
+fn slowInverseSquareRoot(x) {
+    ret 1 / x * x;
+}
+fn main() {
+    ret slowInverseSquareRoot(4;);
+}
