@@ -1,9 +1,11 @@
 mod bindings;
+mod var;
 
 use std::collections::HashMap;
 use std::ffi::CString;
 
 use bindings::*;
+use var::Variable;
 
 use crate::abort;
 use crate::ast::*;
@@ -36,22 +38,22 @@ impl Cg {
             _ => abort!("Please report how you have bypassed the parser"),
         }
     }
-    fn generate_ir(&self, ast: Ast, named_values: &mut HashMap<String, LLVMPointer>) -> LLVMPointer {
+    fn generate_ir(&self, ast: Ast, named_values: &mut HashMap<String, Variable>) -> LLVMPointer {
         match ast {
             Ast::ValueNode(literal) => match literal {
                 LiteralKind::Num(n) => unsafe { PITUSYAGenerateFP(n) },
                 _ => abort!("Strings are not impelemented yet!"),
             },
             Ast::IdentifierNode(ident) => match named_values.get(&ident) {
-                Some(var) => *var,
+                Some(var) => var.value,
                 _ => abort!(format!("No variable {ident}. Consider creating it")),
             },
             Ast::LetNode { assignee, value } => {
                 let name = cstr!(assignee);
                 let value = self.generate_ir(*value, named_values);
-                let var = unsafe { PITUSYACreateVar(value, name.as_ptr()) };
-                named_values.insert(assignee, var);
-                var
+                let value = unsafe { PITUSYACreateVar(value, name.as_ptr()) };
+                named_values.insert(assignee, Variable::new(value, false));
+                value
             }
             Ast::CallNode(proto) => {
                 let function = match self.vtable.get(&proto.name) {
@@ -77,22 +79,45 @@ impl Cg {
 
                 unsafe { PITUSYACallFunction(function, argc, args.as_mut_ptr()) }
             }
-            Ast::BinaryNode { left, right, op } => {
-                let lhs = self.generate_ir(*left, named_values);
-                let rhs = self.generate_ir(*right, named_values);
-
-                match op {
-                    BinaryOperatorKind::Addition => unsafe { PITUSYABuildAdd(lhs, rhs) },
-                    BinaryOperatorKind::Multiplication => unsafe { PITUSYABuildMul(lhs, rhs) },
-                    BinaryOperatorKind::Subtraction => unsafe { PITUSYABuildSub(lhs, rhs) },
-                    BinaryOperatorKind::Division => unsafe { PITUSYABuildDiv(lhs, rhs) },
-                    BinaryOperatorKind::Comparision(cmp) => unsafe { PITUSYABuildCmp(lhs, rhs, cmp.into()) }
-                    BinaryOperatorKind::Assigment => unsafe {
-                        PITUSYAAssignToVar(rhs, lhs);
-                        lhs
-                    },
-                }
-            }
+            Ast::BinaryNode { left, right, op } => match op {
+                BinaryOperatorKind::Addition => unsafe {
+                    PITUSYABuildAdd(
+                        self.deref_or_generate(*left, named_values),
+                        self.deref_or_generate(*right, named_values),
+                    )
+                },
+                BinaryOperatorKind::Multiplication => unsafe {
+                    PITUSYABuildMul(
+                        self.deref_or_generate(*left, named_values),
+                        self.deref_or_generate(*right, named_values),
+                    )
+                },
+                BinaryOperatorKind::Subtraction => unsafe {
+                    PITUSYABuildSub(
+                        self.deref_or_generate(*left, named_values),
+                        self.deref_or_generate(*right, named_values),
+                    )
+                },
+                BinaryOperatorKind::Division => unsafe {
+                    PITUSYABuildDiv(
+                        self.deref_or_generate(*left, named_values),
+                        self.deref_or_generate(*right, named_values),
+                    )
+                },
+                BinaryOperatorKind::Comparision(cmp) => unsafe {
+                    PITUSYABuildCmp(
+                        self.deref_or_generate(*left, named_values),
+                        self.deref_or_generate(*right, named_values),
+                        cmp.into(),
+                    )
+                },
+                BinaryOperatorKind::Assigment => unsafe {
+                    let lhs = self.generate_ir(*left, named_values);
+                    let rhs = self.generate_ir(*right, named_values);
+                    PITUSYAAssignToVar(rhs, lhs);
+                    rhs
+                },
+            },
             Ast::RetNode(ret) => {
                 // Once again. Really bad Rust code.
                 let is_ident = matches!(*ret, Ast::IdentifierNode(_));
@@ -106,32 +131,47 @@ impl Cg {
             _ => todo!(),
         }
     }
-    fn set_arguments(&self, function: LLVMPointer, args: Vec<Ast>, placeholder: &mut HashMap<String, LLVMPointer>) {
+    fn set_arguments(&self, function: LLVMPointer, args: Vec<Ast>, placeholder: &mut HashMap<String, Variable>) {
         for (i, arg) in args.into_iter().enumerate() {
             if let Ast::IdentifierNode(arg) = arg {
                 let param = unsafe {
                     let arg = cstr!(arg);
                     PITUSYASetParam(function, arg.as_ptr(), i)
                 };
-                placeholder.insert(arg, param);
+                placeholder.insert(arg, Variable::new(param, true));
             }
         }
     }
     fn create_function(&mut self, proto: Proto, body: Vec<Ast>) {
-            let function = unsafe {
-                let function_name = cstr!(proto.name);
-                PITUSYACreateFunction(function_name.as_ptr(), proto.args.len())
-            };
+        let function = unsafe {
+            let function_name = cstr!(proto.name);
+            PITUSYACreateFunction(function_name.as_ptr(), proto.args.len())
+        };
 
-            let mut named_values = HashMap::new();
-            self.set_arguments(function, proto.args, &mut named_values);
+        let mut named_values = HashMap::<String, Variable>::new();
+        self.set_arguments(function, proto.args, &mut named_values);
 
-            body.into_iter().for_each(|ast| {
-                self.generate_ir(ast, &mut named_values);
-            });
+        body.into_iter().for_each(|ast| {
+            self.generate_ir(ast, &mut named_values);
+        });
 
-            unsafe { PITUSYACheckFunction(function); }
-            self.vtable.insert(proto.name, function);
+        unsafe {
+            PITUSYACheckFunction(function);
+        }
+        self.vtable.insert(proto.name, function);
+    }
+    fn deref_or_generate(&self, ast: Ast, named_values: &mut HashMap<String, Variable>) -> LLVMPointer {
+        // FUCK YES FINALLY IT WORKS BUT IT IS SO BAAAAAAAAAAAAAAAAAAD
+        if let Ast::IdentifierNode(ref ident) = ast {
+            if let Some(var) = named_values.get(ident) {
+                if !var.is_function_arg {
+                    let ir = self.generate_ir(ast, named_values);
+                    return unsafe { PITUSYADeref(ir, "deref\0".as_ptr() as *const i8) };
+                } 
+            }
+        }
+        self.generate_ir(ast, named_values)
+        
     }
 }
 impl Drop for Cg {
