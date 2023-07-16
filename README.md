@@ -16,7 +16,7 @@ fn main() {
     ret slowInverseSquareRoot(4;);
 }
 ```
-Mind the second in passing arguments!
+Mind the second semicolon in arguments passing!
 
 A bit complicated example:
 ```pitusya
