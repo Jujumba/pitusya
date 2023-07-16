@@ -1,10 +1,12 @@
 use std::cell::RefCell;
+use std::fs;
+use std::io;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct InputFile {
     content: Vec<char>,
     content_str: String,
-    cursor: RefCell<usize>
+    cursor: RefCell<usize>,
 }
 
 impl InputFile {
@@ -36,20 +38,17 @@ impl InputFile {
             self.move_cursor(1);
         }
     }
-    pub fn read_to_string(&self) -> String {
-        let mut s = String::new();
-        s.reserve(self.content.len());
-        self.content.iter().for_each(|c| s.push(*c));
-        s
-    }
-    pub fn new(content: String) -> Self {
-        Self {
+    pub fn new(file_name: &str) -> io::Result<Self> {
+        let content = fs::read_to_string(file_name)?;
+        Ok(Self {
             content: content.chars().collect(),
             content_str: content,
             cursor: RefCell::new(0)
-        }
+        })
     }
-    pub fn get_str(&self) -> &str {
+}
+impl AsRef<str> for InputFile {
+    fn as_ref(&self) -> &str {
         &self.content_str
     }
 }

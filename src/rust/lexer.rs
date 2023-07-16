@@ -19,7 +19,7 @@ pub fn next_token(input: &mut InputFile) -> Token {
             len: 0
         };
     }
-    let content = input.get_str();
+    let content = input.as_ref();
     let curs = input.get_cursor();
     for (regex, closure) in get_specification().iter() {
         match regex.find_at(content, curs) {
