@@ -1,8 +1,12 @@
+#include <llvm-c/Orc.h>
 #include <llvm-c/Types.h>
 #include <llvm-c/Target.h>
 #include "llvm-c/TargetMachine.h"
 #include <llvm-c/Analysis.h>
 #include "llvm-c/Core.h"
+#include "llvm-c/LLJIT.h"
+#include "llvm-c/Error.h"
+#include "llvm-c/ExecutionEngine.h"
 #include "llvm-c/Transforms/PassBuilder.h"
 #include <malloc.h>
 #include <string.h>
@@ -14,11 +18,39 @@ LLVMBuilderRef BUILDER = NULL;
 LLVMTargetRef TARGET = NULL;
 LLVMTargetMachineRef TM = NULL;
 LLVMPassBuilderOptionsRef PB = NULL;
+LLVMOrcLLJITRef JIT = NULL;
 
 static void PITUSYAInitTarget(void) {
     LLVMInitializeNativeTarget();
+    LLVMInitializeNativeAsmPrinter();
+    LLVMInitializeNativeAsmParser();
     TARGET = LLVMGetFirstTarget();
     TM = LLVMCreateTargetMachine(TARGET, LLVMGetDefaultTargetTriple(), NULL, NULL, LLVMCodeGenLevelAggressive, LLVMRelocDefault, LLVMCodeModelDefault);
+}
+static void PITUSYACreateJIT(void) {
+    LLVMErrorRef err = LLVMOrcCreateLLJIT(&JIT, LLVMOrcCreateLLJITBuilder());
+    if (err) {
+        char* msg = LLVMGetErrorMessage(err);
+        fprintf(stderr, "%s\n", msg);
+        LLVMDisposeErrorMessage(msg);
+        // todo: terminate process
+    }
+    LLVMConsumeError(err);
+}
+void PITUSYAJITMain(void) {
+    LLVMOrcJITDylibRef JD = LLVMOrcLLJITGetMainJITDylib(JIT);
+    LLVMOrcResourceTrackerRef RT = LLVMOrcJITDylibGetDefaultResourceTracker(JD);
+    LLVMOrcThreadSafeContextRef THC = LLVMOrcCreateNewThreadSafeContext();
+    LLVMOrcThreadSafeModuleRef TSM = LLVMOrcCreateNewThreadSafeModule(MODULE, THC);
+    LLVMOrcLLJITAddLLVMIRModule(JIT, JD, TSM);
+
+    LLVMOrcExecutorAddress address;
+    (void) LLVMOrcLLJITLookup(JIT, &address, "main");
+    double (*p)() = (double(*)())(intptr_t)address;
+    printf("%f\n", p()); // Printing the result of main function
+
+    LLVMOrcDisposeThreadSafeContext(THC);
+    LLVMOrcResourceTrackerRemove(RT);
 }
 void PITUSYAPreInit() {
     PITUSYAInitTarget();
@@ -27,13 +59,15 @@ void PITUSYAPreInit() {
     BUILDER = LLVMCreateBuilderInContext(CONTEXT);
     PB = LLVMCreatePassBuilderOptions();
     LLVMPassBuilderOptionsSetVerifyEach(PB, true);
+    PITUSYACreateJIT();
+    LLVMSetDataLayout(MODULE, LLVMOrcLLJITGetDataLayoutStr(JIT));
 }
 void PITUSYAPostDestroy() {
     LLVMRunPasses(MODULE, "sroa,early-cse,simplifycfg,reassociate,mem2reg,instsimplify,instcombine,dce", TM, PB);
+    PITUSYAJITMain();
+    LLVMOrcDisposeLLJIT(JIT);
     LLVMDisposePassBuilderOptions(PB);
     LLVMDisposeBuilder(BUILDER);
-    LLVMDumpModule(MODULE);
-    LLVMDisposeModule(MODULE);
     LLVMContextDispose(CONTEXT);
 }
 LLVMValueRef PITUSYACreateFunction(const char* name, size_t argc) {

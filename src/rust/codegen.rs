@@ -78,29 +78,15 @@ impl Cg {
                 unsafe { PITUSYACallFunction(function, argc, args.as_mut_ptr()) }
             }
             Ast::BinaryNode { left, right, op } => {
-                // Some awful Rust. AS IS :)
-                let is_lhs_ident = matches!(*left, Ast::IdentifierNode(_));
                 let lhs = self.generate_ir(*left, named_values);
-                let lhs_derefed = if is_lhs_ident{
-                    unsafe { PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8) }
-                } else {
-                    lhs
-                };
-
-                let is_rhs_ident = matches!(*right, Ast::IdentifierNode(_));
                 let rhs = self.generate_ir(*right, named_values);
-                let rhs_derefed = if is_rhs_ident {
-                    unsafe { PITUSYADeref(lhs, "deref\0".as_ptr() as *const i8) }
-                } else {
-                    rhs
-                };
 
                 match op {
-                    BinaryOperatorKind::Addition => unsafe { PITUSYABuildAdd(lhs_derefed, rhs_derefed) },
-                    BinaryOperatorKind::Multiplication => unsafe { PITUSYABuildMul(lhs_derefed, rhs_derefed) },
-                    BinaryOperatorKind::Subtraction => unsafe { PITUSYABuildSub(lhs_derefed, rhs_derefed) },
-                    BinaryOperatorKind::Division => unsafe { PITUSYABuildDiv(lhs_derefed, rhs_derefed) },
-                    BinaryOperatorKind::Comparision(cmp) => unsafe { PITUSYABuildCmp(lhs_derefed, rhs_derefed, cmp.into()) }
+                    BinaryOperatorKind::Addition => unsafe { PITUSYABuildAdd(lhs, rhs) },
+                    BinaryOperatorKind::Multiplication => unsafe { PITUSYABuildMul(lhs, rhs) },
+                    BinaryOperatorKind::Subtraction => unsafe { PITUSYABuildSub(lhs, rhs) },
+                    BinaryOperatorKind::Division => unsafe { PITUSYABuildDiv(lhs, rhs) },
+                    BinaryOperatorKind::Comparision(cmp) => unsafe { PITUSYABuildCmp(lhs, rhs, cmp.into()) }
                     BinaryOperatorKind::Assigment => unsafe {
                         PITUSYAAssignToVar(rhs, lhs);
                         lhs
@@ -150,10 +136,10 @@ impl Cg {
 }
 impl Drop for Cg {
     fn drop(&mut self) {
-        unsafe { PITUSYAPostDestroy() };
         if !self.contains_main {
             abort!("No main function. Consider creating it.");
         }
+        unsafe { PITUSYAPostDestroy() };
     }
 }
 impl Default for Cg {
