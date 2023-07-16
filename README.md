@@ -27,3 +27,23 @@ fn main() {
     ret complex(11;15;14;);
 }
 ```
+
+# Installation
+## Prerequisites 
+1) LLVM-17 and Clang installed (if you are running on LLVM-16 or lower, specify your version in the .env file)
+2) Rust™ toolchain
+
+## Manual building
+```shell
+# Check your LLVM version with: `llvm-config --version`
+# And specify it if required
+$ git clone https://github.com/Jujumba/pitusya && cd pitusya
+$ cargo build --release
+# Great! Your Pitusya compiler would be in target/release folder
+```
+
+## Via Cargo
+```shell
+# Requires LLVM-17
+$ cargo install pitusya
+```
