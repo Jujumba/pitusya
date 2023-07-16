@@ -10,7 +10,7 @@ pub enum TokenKind {
     Keyword(KeywordKind),
     Literal(LiteralKind),
     Identifier(String),
-    Undefined(char), // For unrecognised characters, such as $ or @
+    Undefined(char),
     EOF
 }
 
@@ -23,6 +23,7 @@ pub enum OperatorKind {
     LBracket, // [
     RBracket, // ]
     Semicol,  // ;
+    Coma,     // ,
     Binary(BinaryOperatorKind)
 }
 #[derive(Debug, PartialEq)]
