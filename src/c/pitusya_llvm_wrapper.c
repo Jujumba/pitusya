@@ -42,7 +42,7 @@ static void PITUSYACreateJIT(void) {
     JD = LLVMOrcLLJITGetMainJITDylib(JIT);
     LLVMLinkInMCJIT();
 }
-void PITUSYAJITMain(void) {
+int PITUSYAJITMain(void) {
     LLVMOrcResourceTrackerRef RT = LLVMOrcJITDylibGetDefaultResourceTracker(JD);
     LLVMOrcThreadSafeContextRef THC = LLVMOrcCreateNewThreadSafeContext();
     LLVMOrcThreadSafeModuleRef TSM = LLVMOrcCreateNewThreadSafeModule(MODULE, THC);
@@ -51,10 +51,11 @@ void PITUSYAJITMain(void) {
     LLVMOrcExecutorAddress address;
     (void) LLVMOrcLLJITLookup(JIT, &address, "main");
     double (*p)() = (double(*)())(intptr_t)address;
-    printf("%f\n", p()); // Printing the result of main function
-
+    int res = (int) p();
+    
     LLVMOrcDisposeThreadSafeContext(THC);
     LLVMOrcResourceTrackerRemove(RT);
+    return res;
 }
 void PITUSYAPreInit() {
     PITUSYAInitTarget();
@@ -68,7 +69,6 @@ void PITUSYAPreInit() {
 }
 void PITUSYAPostDestroy() {
     LLVMRunPasses(MODULE, "sroa,early-cse,simplifycfg,reassociate,mem2reg,instsimplify,instcombine,dce", TM, PB);
-    PITUSYAJITMain();
     LLVMOrcDisposeLLJIT(JIT);
     LLVMDisposePassBuilderOptions(PB);
     LLVMDisposeBuilder(BUILDER);
