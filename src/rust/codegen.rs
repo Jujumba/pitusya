@@ -112,6 +112,11 @@ impl Cg {
                     )
                 },
                 BinaryOperatorKind::Assigment => unsafe {
+                    if let Ast::IdentifierNode(ref ident) = *left {
+                        if named_values.get(ident).unwrap().is_function_arg {
+                            abort!(format!("Cannot assign to const variable {ident}")); 
+                        }
+                    }
                     let lhs = self.generate_ir(*left, named_values);
                     let rhs = self.generate_ir(*right, named_values);
                     PITUSYAAssignToVar(rhs, lhs);
@@ -119,13 +124,7 @@ impl Cg {
                 },
             },
             Ast::RetNode(ret) => {
-                // Once again. Really bad Rust code.
-                let is_ident = matches!(*ret, Ast::IdentifierNode(_));
-                let mut ret = self.generate_ir(*ret, named_values);
-                if is_ident {
-                    ret = unsafe { PITUSYADeref(ret, "deref\0".as_ptr() as *const i8) }
-                }
-                unsafe { PITUSYABuildRet(ret) }
+                unsafe { PITUSYABuildRet(self.deref_or_generate(*ret, named_values)) }
             }
             Ast::UnitNode(unit) => self.generate_ir(*unit, named_values),
             _ => abort!("Your code uses a not implemented yet feature. Thus aborting. Sorry"),
