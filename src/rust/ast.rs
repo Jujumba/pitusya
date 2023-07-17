@@ -26,6 +26,7 @@ pub enum Ast {
         body: Vec<Ast>
     },
     CallNode(Proto),
+    ExternNode(Proto),
     FunctionNode {
         proto: Proto,
         body: Vec<Ast>

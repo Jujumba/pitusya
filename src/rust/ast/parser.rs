@@ -18,7 +18,7 @@ macro_rules! abort_syntax_analysis {
             "Compilation error at position {}:\n\tExpected {}, but got {:?}",
             $pos, $expected, $error
         ))
-    }
+    };
 }
 
 pub fn parse(input: &mut InputFile) -> Vec<Ast> {
@@ -29,8 +29,14 @@ pub fn parse(input: &mut InputFile) -> Vec<Ast> {
                 proto: parse_prototype(input, true),
                 body: parse_block(input),
             }),
+            TokenKind::Keyword(KeywordKind::Extern) => {
+                ast.push(Ast::ExternNode(parse_prototype(input, true)));
+                if !matches!(next_token(input).kind, TokenKind::Operator(OperatorKind::Semicol)) {
+                    abort_syntax_analysis!(input.get_cursor(), "Missing a semicolon!");
+                }
+            }
             TokenKind::EOF => break,
-            _ => abort_syntax_analysis!(input.get_cursor()) // todo
+            e => abort_syntax_analysis!(input.get_cursor(), "`extern` or `fn`", e)
         }
     }
     ast
@@ -145,9 +151,9 @@ fn parse_unit_expr(input: &mut InputFile) -> Ast {
                 op,
             },
             OperatorKind::RParen => ast,
-            e => abort_syntax_analysis!(input.get_cursor(), "a binary operator or `)`", e)
+            e => abort_syntax_analysis!(input.get_cursor(), "a binary operator or `)`", e),
         },
-        e => abort_syntax_analysis!(input.get_cursor(), "`)`", e)
+        e => abort_syntax_analysis!(input.get_cursor(), "`)`", e),
     }
 }
 fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
@@ -159,14 +165,14 @@ fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
         }
         TokenKind::Literal(l) => Ast::ValueNode(l),
         TokenKind::Operator(OperatorKind::LParen) => Ast::UnitNode(Box::new(parse_unit_expr(input))),
-        e => abort_syntax_analysis!(input.get_cursor(), expected, e)
+        e => abort_syntax_analysis!(input.get_cursor(), expected, e),
     }
 }
 fn fetch_ident_or_call(input: &mut InputFile) -> Ast {
     let name_token = next_token(input);
     let name = match name_token.kind {
         TokenKind::Identifier(i) => i,
-        e => abort_syntax_analysis!(input.get_cursor(), "an identifier", e)
+        e => abort_syntax_analysis!(input.get_cursor(), "an identifier", e),
     };
     let paren = next_token(input);
     input.move_back_cursor(paren.len);
@@ -184,8 +190,8 @@ fn parse_let_expr(input: &mut InputFile) -> Ast {
                 assignee,
                 value: Box::new(parse_expression(input)),
             },
-            e => abort_syntax_analysis!(input.get_cursor(), "`=`", e)
+            e => abort_syntax_analysis!(input.get_cursor(), "`=`", e),
         },
-        e => abort_syntax_analysis!(input.get_cursor(), "an identifier", e)
+        e => abort_syntax_analysis!(input.get_cursor(), "an identifier", e),
     }
 }
