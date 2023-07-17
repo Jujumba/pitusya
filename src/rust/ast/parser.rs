@@ -43,12 +43,15 @@ fn parse_prototype(input: &mut InputFile, definition: bool) -> Proto {
             abort_syntax_analysis!(input.get_cursor(), "function's name in its definition", e);
         }
     };
+
     match next_token(input).kind {
         TokenKind::Operator(OperatorKind::LParen) => (),
-        e => abort_syntax_analysis!(input.get_cursor(), "`(`", e)
+        e => abort_syntax_analysis!(input.get_cursor(), "`(`", e),
     }
-    let mut args = vec![];
+
+    let mut args = Vec::<Ast>::new();
     let mut t = next_token(input);
+
     while t.kind != TokenKind::Operator(OperatorKind::RParen) {
         match t.kind {
             TokenKind::Identifier(_) if name == "main" => {
@@ -59,9 +62,16 @@ fn parse_prototype(input: &mut InputFile, definition: bool) -> Proto {
                 input.move_back_cursor(t.len);
                 args.push(parse_expression(input));
             }
-            e => abort_syntax_analysis!(input.get_cursor(), "an identifier", e)
+            e => abort_syntax_analysis!(input.get_cursor(), "an identifier", e),
         }
-        t = next_token(input);
+        match next_token(input).kind {
+            TokenKind::Operator(OperatorKind::Coma) => {
+                t = next_token(input);
+                continue;
+            }
+            TokenKind::Operator(OperatorKind::RParen) => break,
+            e => abort_syntax_analysis!(input.get_cursor(), "a coma or `)`", e),
+        }
     }
     Proto { name, args }
 }
@@ -86,6 +96,10 @@ fn parse_block(input: &mut InputFile) -> Vec<Ast> {
             TokenKind::Identifier(_) | TokenKind::Literal(_) | TokenKind::Operator(OperatorKind::LParen) => {
                 input.move_back_cursor(t.len);
                 body.push(parse_expression(input));
+                let next = next_token(input).kind;
+                if !matches!(next, TokenKind::Operator(OperatorKind::Semicol)) {
+                    abort_syntax_analysis!(input.get_cursor(), "Missing a semicolon!");
+                }
             }
             TokenKind::Keyword(KeywordKind::Ret) => body.push(Ast::RetNode(Box::new(parse_expression(input)))),
             TokenKind::Operator(OperatorKind::Semicol) => continue,
@@ -99,7 +113,8 @@ fn parse_block(input: &mut InputFile) -> Vec<Ast> {
 }
 fn parse_expression(input: &mut InputFile) -> Ast {
     let ast = fetch_lhs(input, "an identifier or literal");
-    match next_token(input).kind {
+    let token = next_token(input);
+    match token.kind {
         TokenKind::Operator(op) => match op {
             OperatorKind::Binary(BinaryOperatorKind::Assigment) if matches!(ast, Ast::ValueNode(_)) => {
                 abort_syntax_analysis!(input.get_cursor(), format!("Cannot assign to the const-value of {ast:?}"));
@@ -109,13 +124,14 @@ fn parse_expression(input: &mut InputFile) -> Ast {
                 right: Box::new(parse_expression(input)),
                 op,
             },
-            OperatorKind::Semicol => ast,
-            e => {
-                abort_syntax_analysis!(input.get_cursor(), "a binary operator or semicolon", e);
+            _ => {
+                input.move_back_cursor(token.len);
+                ast
             }
         },
-        e => {
-            abort_syntax_analysis!(input.get_cursor(), "a binary operator or semicolon", e);
+        _ => {
+            input.move_back_cursor(token.len);
+            ast
         }
     }
 }
