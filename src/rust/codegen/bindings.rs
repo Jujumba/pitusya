@@ -9,6 +9,7 @@ extern "C" {
     pub fn PITUSYACountArgs(function: LLVMPointer) -> usize;
     pub fn PITUSYACheckFunction(function: LLVMPointer);
     pub fn PITUSYADeref(v: LLVMPointer, name: *const i8) -> LLVMPointer;
+    pub fn PITUSYADeclareFunction(name: *const i8, argc: usize) -> LLVMPointer;
     pub fn PITUSYACreateFunction(name: *const i8, argc: usize) -> LLVMPointer;
     pub fn PITUSYACreateVar(value: LLVMPointer, name: *const i8) -> LLVMPointer;
     pub fn PITUSYAAssignToVar(val: LLVMPointer, var: LLVMPointer);
