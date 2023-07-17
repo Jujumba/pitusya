@@ -75,7 +75,7 @@ impl Cg {
                 proto
                     .args
                     .into_iter()
-                    .for_each(|ast| args.push(self.generate_ir(ast, named_values)));
+                    .for_each(|ast| args.push(self.deref_or_generate(ast, named_values)));
 
                 unsafe { PITUSYACallFunction(function, argc, args.as_mut_ptr()) }
             }
