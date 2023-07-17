@@ -128,7 +128,7 @@ impl Cg {
                 unsafe { PITUSYABuildRet(ret) }
             }
             Ast::UnitNode(unit) => self.generate_ir(*unit, named_values),
-            _ => todo!(),
+            _ => abort!("Your code uses a not implemented yet feature. Thus aborting. Sorry"),
         }
     }
     fn set_arguments(&self, function: LLVMPointer, args: Vec<Ast>, placeholder: &mut HashMap<String, Variable>) {
