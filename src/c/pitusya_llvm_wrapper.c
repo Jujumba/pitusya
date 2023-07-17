@@ -18,6 +18,8 @@ LLVMBuilderRef BUILDER = NULL;
 LLVMTargetRef TARGET = NULL;
 LLVMTargetMachineRef TM = NULL;
 LLVMPassBuilderOptionsRef PB = NULL;
+LLVMOrcExecutionSessionRef ES = NULL;
+LLVMOrcJITDylibRef JD = NULL;
 LLVMOrcLLJITRef JIT = NULL;
 
 static void PITUSYAInitTarget(void) {
@@ -36,9 +38,11 @@ static void PITUSYACreateJIT(void) {
         // todo: terminate process
     }
     LLVMConsumeError(err);
+    ES = LLVMOrcLLJITGetExecutionSession(JIT);
+    JD = LLVMOrcLLJITGetMainJITDylib(JIT);
+    LLVMLinkInMCJIT();
 }
 void PITUSYAJITMain(void) {
-    LLVMOrcJITDylibRef JD = LLVMOrcLLJITGetMainJITDylib(JIT);
     LLVMOrcResourceTrackerRef RT = LLVMOrcJITDylibGetDefaultResourceTracker(JD);
     LLVMOrcThreadSafeContextRef THC = LLVMOrcCreateNewThreadSafeContext();
     LLVMOrcThreadSafeModuleRef TSM = LLVMOrcCreateNewThreadSafeModule(MODULE, THC);
@@ -70,15 +74,22 @@ void PITUSYAPostDestroy() {
     LLVMDisposeBuilder(BUILDER);
     LLVMContextDispose(CONTEXT);
 }
-LLVMValueRef PITUSYACreateFunction(const char* name, size_t argc) {
+LLVMValueRef PITUSYADeclareFunction(const char* name, size_t argc) {
     LLVMTypeRef args[argc];
     for (size_t i = 0; i < argc; ++i) {
         args[i] = LLVMDoubleTypeInContext(CONTEXT);
     }
     LLVMValueRef function = LLVMAddFunction(MODULE, name, LLVMFunctionType(LLVMDoubleTypeInContext(CONTEXT), args, argc, 0));
+    return function;
+}
+LLVMValueRef PITUSYACreateFunction(const char* name, size_t argc) {
+    LLVMValueRef function = PITUSYADeclareFunction(name, argc);
     LLVMBasicBlockRef entryBlock = LLVMAppendBasicBlockInContext(CONTEXT, function, "entry");
     LLVMPositionBuilderAtEnd(BUILDER, entryBlock);
     return function;
+}
+LLVMValueRef PITUSYAGetFunction(const char* name) {
+    return LLVMGetNamedFunction(MODULE, name);
 }
 LLVMValueRef PITUSYASetParam(LLVMValueRef function, const char* argn, size_t n) {
     LLVMSetValueName2(LLVMGetParam(function, n), argn, strlen(argn));
