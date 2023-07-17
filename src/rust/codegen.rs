@@ -34,11 +34,14 @@ impl Cg {
                 }
                 self.create_function(proto, body);
             }
+            Ast::ExternNode(_) => {
+                abort!("Extern definitons are not implemented yet. Sorry")
+            }
             Ast::EOF => (),
             _ => abort!("Please report how you have bypassed the parser"),
         }
     }
-    fn generate_ir(&self, ast: Ast, named_values: &mut HashMap<String, Variable>) -> LLVMPointer {
+    fn generate_ir(&mut self, ast: Ast, named_values: &mut HashMap<String, Variable>) -> LLVMPointer {
         match ast {
             Ast::ValueNode(literal) => match literal {
                 LiteralKind::Num(n) => unsafe { PITUSYAGenerateFP(n) },
@@ -130,7 +133,7 @@ impl Cg {
             _ => abort!("Your code uses a not implemented yet feature. Thus aborting. Sorry"),
         }
     }
-    fn set_arguments(&self, function: LLVMPointer, args: Vec<Ast>, placeholder: &mut HashMap<String, Variable>) {
+    fn set_arguments(&mut self, function: LLVMPointer, args: Vec<Ast>, placeholder: &mut HashMap<String, Variable>) {
         for (i, arg) in args.into_iter().enumerate() {
             if let Ast::IdentifierNode(arg) = arg {
                 let param = unsafe {
@@ -159,7 +162,7 @@ impl Cg {
         }
         self.vtable.insert(proto.name, function);
     }
-    fn deref_or_generate(&self, ast: Ast, named_values: &mut HashMap<String, Variable>) -> LLVMPointer {
+    fn deref_or_generate(&mut self, ast: Ast, named_values: &mut HashMap<String, Variable>) -> LLVMPointer {
         // FUCK YES FINALLY IT WORKS BUT IT IS SO BAAAAAAAAAAAAAAAAAAD
         if let Ast::IdentifierNode(ref ident) = ast {
             if let Some(var) = named_values.get(ident) {
