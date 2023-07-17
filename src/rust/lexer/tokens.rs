@@ -83,6 +83,7 @@ impl TryFrom<&str> for OperatorKind {
             ">" => Ok(Self::Binary(BinaryOperatorKind::Comparision(ComparisionOpKind::Bigger))),
             "=" => Ok(Self::Binary(BinaryOperatorKind::Assigment)),
             ";" => Ok(Self::Semicol),
+            "," => Ok(Self::Coma),
             "(" => Ok(Self::LParen),
             ")" => Ok(Self::RParen),
             "{" => Ok(Self::LCurly),

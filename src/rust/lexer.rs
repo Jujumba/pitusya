@@ -59,7 +59,7 @@ fn get_specification() -> &'static Vec<(Regex, Box<Handler>)> {
                 })
             ),
             (
-                Regex::new(r"<=|>=|==|=|\+|-|\*|/|<|>|;|\(|\)|\{|\}").unwrap(),
+                Regex::new(r"<=|>=|==|=|\+|-|\*|/|<|>|;|,|\(|\)|\{|\}").unwrap(),
                 Box::new(|s| match OperatorKind::try_from(s) {
                     Ok(operator) => TokenKind::Operator(operator),
                     _ => TokenKind::Undefined(s.chars().next().unwrap())
