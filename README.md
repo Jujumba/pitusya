@@ -1,8 +1,9 @@
+# The Pitusya Programming Language
+
 <p align="center">
   <img src="dont-readme/PITUSYA.svg" alt="(=^･ω･^=)"/>
 </p>
 
-# The Pitusya Programming Language
 
 ## Overview
 The language with no superpowers (no standard library, only one type - a 64 bit width floating point number).
@@ -13,10 +14,9 @@ fn slowInverseSquareRoot(x) {
     ret 1 / x * x;
 }
 fn main() {
-    ret slowInverseSquareRoot(4;);
+    ret slowInverseSquareRoot(4);
 }
 ```
-Mind the second semicolon in arguments passing!
 
 A bit complicated example:
 ```pitusya
@@ -37,6 +37,7 @@ fn main() {
 2) Rust™up installed
 
 ## Manual building
+Manual building is more prefereable since intalls the latest version
 ```shell
 # Check your LLVM version with: `llvm-config --version`
 # And specify it if required
