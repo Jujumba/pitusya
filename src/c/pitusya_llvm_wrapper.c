@@ -120,7 +120,7 @@ LLVMValueRef PITUSYABuildMul(LLVMValueRef lhs, LLVMValueRef rhs) {
     return LLVMBuildFMul(BUILDER, lhs, rhs, "multmp");
 }
 LLVMValueRef PITUSYABuildSub(LLVMValueRef lhs, LLVMValueRef rhs) {
-    return LLVMBuildSub(BUILDER, lhs, rhs, "subtmp");
+    return LLVMBuildFSub(BUILDER, lhs, rhs, "subtmp");
 }
 LLVMValueRef PITUSYABuildDiv(LLVMValueRef lhs, LLVMValueRef rhs) {
     return LLVMBuildFDiv(BUILDER, lhs, rhs, "divtmp");
