@@ -2,7 +2,7 @@
 name = "pitusya"
 authors = ["Jujumba"]
 repository = "https://github.com/Jujumba/pitusya"
-description = "The Pitusya programming language"
+description = "The Pitusya Programming Language"
 version = "1.0.1"
 edition = "2021"
 license = "MIT"
