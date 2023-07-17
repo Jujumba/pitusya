@@ -20,30 +20,33 @@ Mind the second semicolon in arguments passing!
 
 A bit complicated example:
 ```pitusya
-fn complex(a b c) {
+fn complex(a, b, c) {
     ret a * b / (c * a) + (c / 8) * (a * a);
 }
 fn main() {
-    ret complex(11;15;14;);
+    let a = 11;
+    let b = 15;
+    let c = a = b = 10000;
+    ret complex(a, b, c);
 }
 ```
 
 # Installation
 ## Prerequisites 
-1) LLVM-17 and Clang installed (if you are running on LLVM-16 or lower, specify your version in the .env file)
-2) Rust™ toolchain
+1) LLVM-16 and Clang installed (if you are running on LLVM-15 or lower, specify your version in the .env file)
+2) Rust™up installed
 
 ## Manual building
 ```shell
 # Check your LLVM version with: `llvm-config --version`
 # And specify it if required
-$ git clone https://github.com/Jujumba/pitusya && cd pitusya
-$ cargo build --release
+$ git clone https://github.com/Jujumba/pitusya
+$ cargo install --path pitusya
 # Great! Your Pitusya compiler would be in target/release folder
 ```
 
 ## Via Cargo
 ```shell
-# Requires LLVM-17
+# Requires LLVM-16
 $ cargo install pitusya
 ```
