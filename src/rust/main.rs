@@ -1,19 +1,24 @@
 use std::env;
+use std::process::ExitCode;
 
 use pitusya::abort;
 use pitusya::ast::parser::parse;
 use pitusya::ast::Ast;
 use pitusya::codegen::Cg;
-use pitusya::input;
+use pitusya::input::InputFile;
 
-fn main() {
+fn main() -> ExitCode {
     let args = env::args().collect::<Vec<String>>();
     if args.len() < 2 {
         abort!("Error: No input file!");
     }
-    let input = &args[1];
-    let mut input = input::InputFile::new(input).unwrap_or_else(|_| abort!(format!("Error: File {input} doesn't exist!")));
+
+    let file = &args[1];
+    let mut input = InputFile::new(file).unwrap_or_else(|_| abort!(format!("Error: File {file} doesn't exist!")));
+
     let mut cg = Cg::default();
     let asts: Vec<Ast> = parse(&mut input);
     asts.into_iter().for_each(|ast| cg.codegen(ast));
+
+    ExitCode::from(cg.exec() as u8)
 }
