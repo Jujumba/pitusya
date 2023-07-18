@@ -68,11 +68,13 @@ void PITUSYAPreInit() {
     LLVMSetDataLayout(MODULE, LLVMOrcLLJITGetDataLayoutStr(JIT));
 }
 void PITUSYAPostDestroy() {
-    LLVMRunPasses(MODULE, "sroa,early-cse,simplifycfg,reassociate,mem2reg,instsimplify,instcombine,dce", TM, PB);
     LLVMOrcDisposeLLJIT(JIT);
     LLVMDisposePassBuilderOptions(PB);
     LLVMDisposeBuilder(BUILDER);
     LLVMContextDispose(CONTEXT);
+}
+void PITUSYARunPasses() {
+    LLVMRunPasses(MODULE, "sroa,early-cse,simplifycfg,reassociate,mem2reg,instsimplify,instcombine,dce", TM, PB);
 }
 LLVMValueRef PITUSYADeclareFunction(const char* name, size_t argc) {
     LLVMTypeRef args[argc];
