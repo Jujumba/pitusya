@@ -173,14 +173,20 @@ impl Cg {
             }
         }
         self.generate_ir(ast, named_values)
-        
+    }
+    pub fn exec(&self) -> i32 {
+        if !self.contains_main {
+            abort!("No main function. Consider creating it.");
+        } else {
+            unsafe {
+                PITUSYARunPasses();
+                PITUSYAJITMain()
+            }
+        }
     }
 }
 impl Drop for Cg {
     fn drop(&mut self) {
-        if !self.contains_main {
-            abort!("No main function. Consider creating it.");
-        }
         unsafe { PITUSYAPostDestroy() };
     }
 }
