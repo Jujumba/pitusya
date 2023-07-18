@@ -28,7 +28,7 @@ static void PITUSYAInitTarget(void) {
     LLVMInitializeNativeAsmPrinter();
     LLVMInitializeNativeAsmParser();
     TARGET = LLVMGetFirstTarget();
-    TM = LLVMCreateTargetMachine(TARGET, LLVMGetDefaultTargetTriple(), NULL, NULL, LLVMCodeGenLevelAggressive, LLVMRelocDefault, LLVMCodeModelDefault);
+    TM = LLVMCreateTargetMachine(TARGET, LLVMGetDefaultTargetTriple(), NULL, NULL, LLVMCodeGenLevelAggressive, LLVMRelocDefault, LLVMCodeModelJITDefault);
 }
 static void PITUSYACreateJIT(void) {
     LLVMErrorRef err = LLVMOrcCreateLLJIT(&JIT, LLVMOrcCreateLLJITBuilder());
