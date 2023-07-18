@@ -8,6 +8,7 @@
 #include "llvm-c/Error.h"
 #include "llvm-c/ExecutionEngine.h"
 #include "llvm-c/Transforms/PassBuilder.h"
+#include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
 #include <stdbool.h>
@@ -35,7 +36,7 @@ static void PITUSYACreateJIT(void) {
         char* msg = LLVMGetErrorMessage(err);
         fprintf(stderr, "%s\n", msg);
         LLVMDisposeErrorMessage(msg);
-        // todo: terminate process
+        exit(18);
     }
     LLVMConsumeError(err);
     ES = LLVMOrcLLJITGetExecutionSession(JIT);
