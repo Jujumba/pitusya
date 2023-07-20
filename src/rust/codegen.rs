@@ -153,6 +153,8 @@ impl Cg {
         let mut named_values = HashMap::<String, Variable>::new();
         self.set_arguments(function, proto.args, &mut named_values);
 
+        self.vtable.insert(proto.name, function);
+
         body.into_iter().for_each(|ast| {
             self.generate_ir(ast, &mut named_values);
         });
@@ -160,7 +162,6 @@ impl Cg {
         unsafe {
             PITUSYACheckFunction(function);
         }
-        self.vtable.insert(proto.name, function);
     }
     fn deref_or_generate(&mut self, ast: Ast, named_values: &mut HashMap<String, Variable>) -> LLVMPointer {
         // FUCK YES FINALLY IT WORKS BUT IT IS SO BAAAAAAAAAAAAAAAAAAD
