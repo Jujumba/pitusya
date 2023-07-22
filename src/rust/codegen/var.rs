@@ -1,8 +1,8 @@
 use super::bindings::LLVMPointer;
 
 pub struct Variable {
-    pub(crate) value: LLVMPointer,
-    pub(crate) is_function_arg: bool,
+    pub(super) value: LLVMPointer,
+    pub(super) is_function_arg: bool,
 }
 impl Variable {
     pub fn new(value: LLVMPointer, is_function_arg: bool) -> Self {
