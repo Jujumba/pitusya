@@ -175,14 +175,13 @@ impl Cg {
         }
         self.generate_ir(ast, named_values)
     }
-    pub fn exec(&self) -> i32 {
+    pub fn exec(self) -> i32 {
         if !self.contains_main {
             abort!("No main function. Consider creating it.");
-        } else {
-            unsafe {
-                PITUSYARunPasses();
-                PITUSYAJITMain()
-            }
+        } 
+        unsafe {
+            PITUSYARunPasses();
+            PITUSYAJITMain()
         }
     }
 }
