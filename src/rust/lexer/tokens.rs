@@ -111,3 +111,17 @@ pub enum LiteralKind {
     Num(f64),
     Str(String)
 }
+impl Token {
+    pub fn eof() -> Self {
+        Self {
+            kind: TokenKind::EOF,
+            len: 0
+        }
+    }
+    pub fn undefined(c: char) -> Self {
+        Self {
+            kind: TokenKind::Undefined(c),
+            len: 1
+        }
+    }
+}
