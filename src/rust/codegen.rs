@@ -43,9 +43,11 @@ impl Cg {
     }
     fn generate_ir(&mut self, ast: Ast, named_values: &mut HashMap<String, Variable>) -> LLVMPointer {
         match ast {
-            Ast::ValueNode(literal) => match literal {
-                LiteralKind::Num(n) => unsafe { PITUSYAGenerateFP(n) },
-                _ => abort!("Strings are not impelemented yet!"),
+            Ast::ValueNode(literal) => {
+                let LiteralKind::Num(n) = literal else {
+                    abort!("Strings are not impelemented yet!")
+                };
+                unsafe { PITUSYAGenerateFP(n) }
             },
             Ast::IdentifierNode(ident) => match named_values.get(&ident) {
                 Some(var) => var.value,
@@ -74,7 +76,7 @@ impl Cg {
                     ))
                 }
 
-                let mut args = Vec::new();
+                let mut args = Vec::with_capacity(argc);
                 proto
                     .args
                     .into_iter()
@@ -175,14 +177,13 @@ impl Cg {
         }
         self.generate_ir(ast, named_values)
     }
-    pub fn exec(&self) -> i32 {
+    pub fn exec(self) -> i32 {
         if !self.contains_main {
             abort!("No main function. Consider creating it.");
-        } else {
-            unsafe {
-                PITUSYARunPasses();
-                PITUSYAJITMain()
-            }
+        } 
+        unsafe {
+            PITUSYARunPasses();
+            PITUSYAJITMain()
         }
     }
 }

@@ -14,10 +14,7 @@ static SPEC: OnceLock<Vec<(Regex, Box<Handler>)>> = OnceLock::new();
 pub fn next_token(input: &mut InputFile) -> Token {
     input.skip_spaces();
     if input.out_of_bounds() {
-        return Token {
-            kind: TokenKind::EOF,
-            len: 0
-        };
+        return Token::eof();
     }
     let content = input.as_ref();
     let curs = input.get_cursor();
@@ -34,10 +31,7 @@ pub fn next_token(input: &mut InputFile) -> Token {
     }
     let c = input.current_char();
     input.move_cursor(1);
-    Token {
-        kind: TokenKind::Undefined(c),
-        len: 1
-    }
+    Token::undefined(c)
 }
 
 fn get_specification() -> &'static Vec<(Regex, Box<Handler>)> {
@@ -52,7 +46,7 @@ fn get_specification() -> &'static Vec<(Regex, Box<Handler>)> {
                 Box::new(|s| TokenKind::Literal(LiteralKind::Str(s.into())))
             ),
             (
-                Regex::new(r"[a-zA-Z0-9]+").unwrap(),
+                Regex::new(r"[_a-zA-Z0-9]+").unwrap(),
                 Box::new(|s| match KeywordKind::try_from(s) {
                     Ok(keyword) => TokenKind::Keyword(keyword),
                     _ => TokenKind::Identifier(s.into())
