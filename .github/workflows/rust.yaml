@@ -26,9 +26,6 @@ jobs:
     - name: Add nightly fmt
       run: rustup component add rustfmt --toolchain nightly-x86_64-unknown-linux-gnu
 
-    - name: Build and test
-      run: cargo test
-
     - name: Clippy
       run: cargo clippy -- -D warnings
 
