@@ -43,9 +43,11 @@ impl Cg {
     }
     fn generate_ir(&mut self, ast: Ast, named_values: &mut HashMap<String, Variable>) -> LLVMPointer {
         match ast {
-            Ast::ValueNode(literal) => match literal {
-                LiteralKind::Num(n) => unsafe { PITUSYAGenerateFP(n) },
-                _ => abort!("Strings are not impelemented yet!"),
+            Ast::ValueNode(literal) => {
+                let LiteralKind::Num(n) = literal else {
+                    abort!("Strings are not impelemented yet!")
+                };
+                unsafe { PITUSYAGenerateFP(n) }
             },
             Ast::IdentifierNode(ident) => match named_values.get(&ident) {
                 Some(var) => var.value,
