@@ -10,11 +10,11 @@ The language with no superpowers (no standard library, only one type - a 64 bit 
 
 ## Syntax
 ```pitusya
-fn slowInverseSquareRoot(x) {
+fn slow_inverse_square_root(x) {
     ret 1 / x * x;
 }
 fn main() {
-    ret slowInverseSquareRoot(4);
+    ret slow_inverse_square_root(4);
 }
 ```
 
