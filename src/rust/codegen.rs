@@ -74,7 +74,7 @@ impl Cg {
                     ))
                 }
 
-                let mut args = Vec::with_capacity(proto.args.len());
+                let mut args = Vec::with_capacity(argc);
                 proto
                     .args
                     .into_iter()
