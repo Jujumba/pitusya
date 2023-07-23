@@ -2,6 +2,7 @@ pub mod ast;
 pub mod codegen;
 pub mod input;
 pub mod lexer;
+pub mod pass;
 
 #[macro_export]
 macro_rules! abort {
