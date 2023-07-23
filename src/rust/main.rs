@@ -5,6 +5,7 @@ use pitusya::abort;
 use pitusya::ast::parser::parse;
 use pitusya::ast::Ast;
 use pitusya::codegen::Cg;
+use pitusya::pass::PitusyaPassManager;
 use pitusya::input::InputFile;
 
 fn main() -> ExitCode {
@@ -17,7 +18,10 @@ fn main() -> ExitCode {
     let mut input = InputFile::new(file).unwrap_or_else(|_| abort!(format!("Error: File {file} doesn't exist!")));
 
     let mut cg = Cg::default();
+    let pm = PitusyaPassManager;
+
     let asts: Vec<Ast> = parse(&mut input);
+    pm.pipeline(&asts);
     asts.into_iter().for_each(|ast| cg.codegen(ast));
 
     ExitCode::from(cg.exec() as u8)
