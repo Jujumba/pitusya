@@ -24,5 +24,6 @@ fn main() -> ExitCode {
     pm.pipeline(&asts);
     asts.into_iter().for_each(|ast| cg.codegen(ast));
 
+    #[allow(clippy::cast_possible_truncation)]
     ExitCode::from(cg.exec() as u8)
 }

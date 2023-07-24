@@ -9,7 +9,7 @@ use var::Variable;
 
 use crate::abort;
 use crate::ast::*;
-use crate::lexer::tokens::*;
+use crate::lexer::tokens::{BinaryOperatorKind, LiteralKind};
 
 macro_rules! cstr {
     ($string: expr) => {
@@ -19,7 +19,7 @@ macro_rules! cstr {
 
 pub struct Cg {
     vtable: HashMap<String, LLVMPointer>,
-    contains_main: bool
+    contains_main: bool,
 }
 
 impl Cg {
@@ -34,9 +34,7 @@ impl Cg {
                 }
                 self.create_function(proto, body);
             }
-            Ast::ExternNode(_) => {
-                abort!("Extern definitons are not implemented yet. Sorry")
-            }
+            Ast::ExternNode(_) => abort!("Extern definitons are not implemented yet. Sorry"),
             Ast::EOF => (),
             _ => abort!("Please report how you have bypassed the parser"),
         }
@@ -48,10 +46,11 @@ impl Cg {
                     abort!("Strings are not impelemented yet!")
                 };
                 unsafe { PITUSYAGenerateFP(n) }
-            },
-            Ast::IdentifierNode(ident) => match named_values.get(&ident) {
-                Some(var) => var.value,
-                _ => abort!(format!("No variable {ident}. Consider creating it")),
+            }
+            Ast::IdentifierNode(ident) => if let Some(var) = named_values.get(&ident) {
+                var.value
+            } else {
+                abort!(format!("No variable {ident}. Consider creating it"))
             },
             Ast::LetNode { assignee, value } => {
                 let name = cstr!(assignee);
@@ -61,9 +60,10 @@ impl Cg {
                 value
             }
             Ast::CallNode(proto) => {
-                let function = match self.vtable.get(&proto.name) {
-                    Some(f) => *f,
-                    _ => abort!(format!("No function {}. Define it before calling", proto.name)),
+                let function = if let Some(f) = self.vtable.get(&proto.name) {
+                    *f
+                } else {
+                    abort!(format!("No function {}. Define it before calling", proto.name))
                 };
 
                 let argc = unsafe { PITUSYACountArgs(function) };
@@ -73,7 +73,7 @@ impl Cg {
                         proto.name,
                         argc,
                         proto.args.len()
-                    ))
+                    ));
                 }
 
                 let mut args = Vec::with_capacity(argc);
@@ -119,7 +119,7 @@ impl Cg {
                 BinaryOperatorKind::Assigment => unsafe {
                     if let Ast::IdentifierNode(ref ident) = *left {
                         if named_values.get(ident).unwrap().is_function_arg {
-                            abort!(format!("Cannot assign to const variable {ident}")); 
+                            abort!(format!("Cannot assign to const variable {ident}"));
                         }
                     }
                     let lhs = self.generate_ir(*left, named_values);
@@ -157,9 +157,9 @@ impl Cg {
 
         self.vtable.insert(proto.name, function);
 
-        body.into_iter().for_each(|ast| {
-            self.generate_ir(ast, &mut named_values);
-        });
+        for instruction in body {
+            self.generate_ir(instruction, &mut named_values);
+        }
 
         unsafe {
             PITUSYACheckFunction(function);
@@ -171,8 +171,8 @@ impl Cg {
             if let Some(var) = named_values.get(ident) {
                 if !var.is_function_arg {
                     let ir = self.generate_ir(ast, named_values);
-                    return unsafe { PITUSYADeref(ir, "deref\0".as_ptr() as *const i8) };
-                } 
+                    return unsafe { PITUSYADeref(ir, "deref\0".as_ptr().cast::<i8>()) };
+                }
             }
         }
         self.generate_ir(ast, named_values)
@@ -180,7 +180,7 @@ impl Cg {
     pub fn exec(self) -> i32 {
         if !self.contains_main {
             abort!("No main function. Consider creating it.");
-        } 
+        }
         unsafe {
             PITUSYARunPasses();
             PITUSYAJITMain()
@@ -197,7 +197,7 @@ impl Default for Cg {
         unsafe { PITUSYAPreInit() };
         Self {
             vtable: HashMap::new(),
-            contains_main: false
+            contains_main: false,
         }
     }
 }
