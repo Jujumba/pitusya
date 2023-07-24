@@ -16,8 +16,7 @@ impl PitusyaPassManager {
             let mut count: usize = 0;
             for ast in body {
                 match ast {
-                    Ast::IfNode { body, .. } => stack.push(body),
-                    Ast::WhileNode { body, .. } => stack.push(body),
+                    Ast::IfNode { body, .. } | Ast::WhileNode { body, .. } => stack.push(body),
                     Ast::RetNode(_) => count += 1,
                     _ => ()
                 }
