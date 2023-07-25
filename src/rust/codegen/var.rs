@@ -1,11 +1,11 @@
-use super::bindings::LLVMPointer;
+use super::bindings::*;
 
 pub struct Variable {
-    pub(super) value: LLVMPointer,
+    pub(super) value: LLVMValueRef,
     pub(super) is_function_arg: bool,
 }
 impl Variable {
-    pub fn new(value: LLVMPointer, is_function_arg: bool) -> Self {
+    pub fn new(value: LLVMValueRef, is_function_arg: bool) -> Self {
         Self { value, is_function_arg }
     }
 }
