@@ -3,7 +3,7 @@ pub use llvm_sys::prelude::*;
 use std::ffi::CStr;
 use std::ffi::CString;
 
-use libc::c_void;
+
 use llvm_sys::analysis::LLVMVerifierFailureAction;
 use llvm_sys::analysis::LLVMVerifyFunction;
 use llvm_sys::core::*;
@@ -23,7 +23,6 @@ use llvm_sys::transforms::pass_builder::*;
 
 use crate::abort;
 
-pub type LLVMPointer = *mut c_void;
 
 pub struct LLVMWrapper {
     context: LLVMContextRef,
@@ -117,8 +116,8 @@ impl LLVMWrapper {
     pub unsafe fn declare_function(&self, name: &str, argc: usize) -> LLVMValueRef {
         let name = CString::new(name).unwrap();
         let mut args = Vec::with_capacity(argc);
-        for i in args.iter_mut().take(argc) {
-            *i = LLVMDoubleTypeInContext(self.context);
+        for _ in 0..argc {
+            args.push(LLVMDoubleTypeInContext(self.context));
         }
         LLVMAddFunction(
             self.module,
@@ -132,10 +131,11 @@ impl LLVMWrapper {
         LLVMPositionBuilderAtEnd(self.builder, entry);
         function
     }
-    pub unsafe fn set_param2function(&self, function: LLVMValueRef, argn: &str, n: usize) -> LLVMValueRef {
+    pub unsafe fn set_param2function(&self, function: LLVMValueRef, argn: &str, index: usize) -> LLVMValueRef {
         let argn = CString::new(argn).unwrap();
-        LLVMSetValueName2(LLVMGetParam(function, n as _), argn.as_ptr(), argn.as_bytes().len());
-        LLVMGetParam(function, n as _)
+        let param = LLVMGetParam(function, index as _);
+        LLVMSetValueName2(param, argn.as_ptr(), argn.as_bytes().len());
+        param
     }
     pub unsafe fn count_args(&self, function: LLVMValueRef) -> usize {
         LLVMCountParams(function) as _
@@ -172,6 +172,7 @@ impl LLVMWrapper {
     pub unsafe fn gen_fp(&self, n: f64) -> LLVMValueRef {
         LLVMConstReal(LLVMDoubleTypeInContext(self.context), n)
     }
+    #[allow(dead_code)]
     pub unsafe fn gen_string(&self, s: &str) -> LLVMValueRef {
         let s = CString::new(s).unwrap();
         LLVMConstString(s.as_ptr(), s.as_bytes().len() as _, 0)
