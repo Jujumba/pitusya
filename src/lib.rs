@@ -6,8 +6,12 @@ pub mod pass;
 
 #[macro_export]
 macro_rules! abort {
-    ($err:expr) => {{
-        eprintln!("{}", $err);
+    ($msg:expr) => {{
+        eprintln!($msg);
+        ::std::process::exit(18)
+    }};
+    ($msg:expr, $($args:expr),*) => {{
+        eprintln!($msg, $($args),*);
         ::std::process::exit(18)
     }};
 }
@@ -15,7 +19,7 @@ macro_rules! abort {
 macro_rules! abort_if_not {
     ($cond:expr, $msg: expr, $($p:expr),*) => {
         if ! $cond {
-            eprintln!($msg, $($p)*);
+            eprintln!($msg, $($p),*);
             ::std::process::exit(18);
         }
     };
