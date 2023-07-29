@@ -7,13 +7,6 @@ version = "1.0.1"
 edition = "2021"
 license = "MIT"
 
-[lib]
-path = "src/rust/lib.rs"
-
-[[bin]]
-name = "pitusya"
-path = "src/rust/main.rs"
-
 [dependencies]
 libc = "0.2.146"
 llvm-sys = "160.1.3"
