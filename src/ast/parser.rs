@@ -8,16 +8,16 @@ use crate::lexer::tokens::*;
 
 macro_rules! abort_syntax_analysis {
     ($pos: expr) => {
-        abort!(format!("Compilation error at position {}", $pos))
+        abort!("Compilation error at position {}", $pos)
     };
     ($pos:expr, $msg:expr) => {
-        abort!(format!("Compilation error at position {}\n\t{}", $pos, $msg))
+        abort!("Compilation error at position {}\n\t{}", $pos, $msg)
     };
     ($pos: expr, $expected: expr, $error: expr) => {
-        abort!(format!(
+        abort!(
             "Compilation error at position {}:\n\tExpected {}, but got {:?}",
             $pos, $expected, $error
-        ))
+        )
     };
 }
 

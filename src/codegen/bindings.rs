@@ -96,7 +96,7 @@ impl LLVMWrapper {
         let err = LLVMOrcCreateLLJIT(&mut self.jit as *mut *mut _, LLVMOrcCreateLLJITBuilder());
         if !err.is_null() {
             let msg = LLVMGetErrorMessage(err);
-            abort!(CStr::from_ptr(msg).to_str().unwrap()); // Todo: string is not deallocated
+            abort!("{}", CStr::from_ptr(msg).to_str().unwrap()); // Todo: string is not deallocated
         }
         LLVMConsumeError(err);
         self.execution_sesion = LLVMOrcLLJITGetExecutionSession(self.jit);
