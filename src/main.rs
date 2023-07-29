@@ -15,7 +15,7 @@ fn main() -> ExitCode {
     }
 
     let file = &args[1];
-    let mut input = InputFile::new(file).unwrap_or_else(|_| abort!(format!("Error: File {file} doesn't exist!")));
+    let mut input = InputFile::new(file).unwrap_or_else(|_| abort!("Error: File {file} doesn't exist!"));
 
     let mut cg = Cg::default();
     let pm = PitusyaPassManager;

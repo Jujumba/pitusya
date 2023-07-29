@@ -24,7 +24,7 @@ impl Cg {
                     self.contains_main = true;
                 }
                 if self.vtable.contains_key(&proto.name) {
-                    abort!(format!("Function {} already exists!", proto.name));
+                    abort!("Function {} already exists!", proto.name);
                 }
                 self.create_function(proto, body);
             }
@@ -45,7 +45,7 @@ impl Cg {
                 if let Some(var) = named_values.get(&ident) {
                     var.value
                 } else {
-                    abort!(format!("No variable {ident}. Consider creating it"))
+                    abort!("No variable {ident}. Consider creating it")
                 }
             }
             Ast::LetNode { assignee, value } => {
@@ -58,17 +58,17 @@ impl Cg {
                 let function = if let Some(f) = self.vtable.get(&proto.name) {
                     *f
                 } else {
-                    abort!(format!("No function {}. Define it before calling", proto.name))
+                    abort!("No function {}. Define it before calling", proto.name)
                 };
 
                 let argc = unsafe { self.wrapper.count_args(function) };
                 if argc != proto.args.len() {
-                    abort!(format!(
+                    abort!(
                         "Incorrect number of arguments passed to {}. Expected {}, but got {}",
                         proto.name,
                         argc,
                         proto.args.len()
-                    ));
+                    );
                 }
 
                 let mut args = Vec::with_capacity(argc);
@@ -108,7 +108,7 @@ impl Cg {
                 BinaryOperatorKind::Assigment => unsafe {
                     if let Ast::IdentifierNode(ref ident) = *left {
                         if named_values.get(ident).unwrap().is_function_arg {
-                            abort!(format!("Cannot assign to const variable {ident}"));
+                            abort!("Cannot assign to const variable {ident}");
                         }
                     }
                     let lhs = self.generate_ir(*left, named_values);
