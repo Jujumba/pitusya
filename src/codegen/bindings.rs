@@ -160,7 +160,7 @@ impl LLVMWrapper {
         var
     }
     pub unsafe fn assign2var(&self, var: LLVMValueRef, val: LLVMValueRef) {
-        LLVMBuildStore(self.builder, val, var);
+        LLVMBuildStore(self.builder, var, val);
     }
     pub unsafe fn deref(&self, v: LLVMValueRef, name: &str) -> LLVMValueRef {
         let name = CString::new(name).unwrap();
@@ -190,7 +190,8 @@ impl LLVMWrapper {
         LLVMBuildFDiv(self.builder, lhs, rhs, "divtmp\0".as_ptr().cast())
     }
     pub unsafe fn cmp(&self, lhs: LLVMValueRef, rhs: LLVMValueRef, op: i32) -> LLVMValueRef {
-        LLVMBuildFCmp(self.builder, std::mem::transmute(op), lhs, rhs, "cmptmp\0".as_ptr().cast())
+        let cmp = LLVMBuildFCmp(self.builder, std::mem::transmute(op), lhs, rhs, "cmptmp\0".as_ptr().cast());
+        LLVMBuildSIToFP(self.builder, cmp, LLVMDoubleTypeInContext(self.context), "casttmp\0".as_ptr().cast())
     }
 }
 impl Drop for LLVMWrapper {
