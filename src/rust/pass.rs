@@ -1,31 +1,28 @@
+use crate::abort_if_not;
 use crate::ast::Ast;
-use crate::abort;
 
 pub struct PitusyaPassManager;
 impl PitusyaPassManager {
     pub fn pipeline(&self, asts: &[Ast]) {
         for ast in asts {
-            if let Ast::FunctionNode { proto, body} = ast {
+            if let Ast::FunctionNode { proto, body } = ast {
                 self.terminated(&proto.name, body);
             }
         }
     }
     fn terminated(&self, name: &str, body: &[Ast]) {
-        let mut stack = vec![body];
-        while let Some(body) = stack.pop() {
-            let mut count: usize = 0;
-            for ast in body {
-                match ast {
-                    Ast::IfNode { body, .. } | Ast::WhileNode { body, .. } => stack.push(body),
-                    Ast::RetNode(_) => count += 1,
-                    _ => ()
-                }
-            }
-            if count == 0 {
-                abort!(format!("Error: function `{name}` does not return a value!"));
-            } else if count == 2 {
-                abort!(format!("Error: function `{name}` returns multiple values!"));
-            }
-        }
+        let mut stack = Vec::with_capacity(body.len());
+        // todo: may be written better
+        let mut counter = 0;
+        body.iter().for_each(|ast| match ast {
+            Ast::WhileNode { body, .. } | Ast::IfNode { body, .. } => stack.push(body),
+            Ast::RetNode(_) => counter += 1,
+            _ => (),
+        });
+        abort_if_not!(counter == 1, "Error: function {} returns multiple values or returns nothing", name);
+        stack.into_iter().for_each(|block| {
+            let count = block.iter().filter(|ast| matches!(ast, Ast::RetNode(_))).count();
+            abort_if_not!(count <= 1, "Error: function {} returns multiple values", name);
+        })
     }
 }
