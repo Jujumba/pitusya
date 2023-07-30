@@ -3,7 +3,6 @@ pub use llvm_sys::prelude::*;
 use std::ffi::CStr;
 use std::ffi::CString;
 
-
 use llvm_sys::analysis::LLVMVerifierFailureAction;
 use llvm_sys::analysis::LLVMVerifyFunction;
 use llvm_sys::core::*;
@@ -20,8 +19,10 @@ use llvm_sys::target_machine::LLVMTargetMachineRef;
 use llvm_sys::target_machine::LLVMTargetRef;
 use llvm_sys::target_machine::{LLVMCodeGenOptLevel, LLVMCodeModel, LLVMRelocMode};
 use llvm_sys::transforms::pass_builder::*;
+use llvm_sys::LLVMRealPredicate;
 
 use crate::abort;
+use crate::lexer::tokens::ComparisionOpKind;
 
 
 pub struct LLVMWrapper {
@@ -137,6 +138,19 @@ impl LLVMWrapper {
         LLVMSetValueName2(param, argn.as_ptr(), argn.as_bytes().len());
         param
     }
+    pub unsafe fn create_condition(&self, cond: LLVMValueRef) -> LLVMBasicBlockRef {
+        let function = LLVMGetBasicBlockParent(LLVMGetInsertBlock(self.builder));
+
+        let then = LLVMAppendBasicBlockInContext(self.context, function, "then\0".as_ptr().cast());
+        let merge = LLVMAppendBasicBlockInContext(self.context, function, "merge\0".as_ptr().cast());
+        LLVMBuildCondBr(self.builder, self.i1cmp(cond, self.gen_fp(0.0), ComparisionOpKind::NeEq), then, merge);
+
+        LLVMPositionBuilderAtEnd(self.builder, then);
+        merge
+    }
+    pub unsafe fn terminate_condition(&self, merge: LLVMBasicBlockRef) {
+        LLVMPositionBuilderAtEnd(self.builder, merge);
+    }
     pub unsafe fn count_args(&self, function: LLVMValueRef) -> usize {
         LLVMCountParams(function) as _
     }
@@ -189,9 +203,17 @@ impl LLVMWrapper {
     pub unsafe fn div(&self, lhs: LLVMValueRef, rhs: LLVMValueRef) -> LLVMValueRef {
         LLVMBuildFDiv(self.builder, lhs, rhs, "divtmp\0".as_ptr().cast())
     }
-    pub unsafe fn cmp(&self, lhs: LLVMValueRef, rhs: LLVMValueRef, op: i32) -> LLVMValueRef {
-        let cmp = LLVMBuildFCmp(self.builder, std::mem::transmute(op), lhs, rhs, "cmptmp\0".as_ptr().cast());
-        LLVMBuildSIToFP(self.builder, cmp, LLVMDoubleTypeInContext(self.context), "casttmp\0".as_ptr().cast())
+    pub unsafe fn cmp(&self, lhs: LLVMValueRef, rhs: LLVMValueRef, op: ComparisionOpKind) -> LLVMValueRef {
+        let cmp = LLVMBuildFCmp(self.builder, op.into(), lhs, rhs, "cmptmp\0".as_ptr().cast());
+        LLVMBuildSIToFP(
+            self.builder,
+            cmp,
+            LLVMDoubleTypeInContext(self.context),
+            "casttmp\0".as_ptr().cast(),
+        )
+    }
+    unsafe fn i1cmp(&self, lhs: LLVMValueRef, rhs: LLVMValueRef, op: ComparisionOpKind) -> LLVMValueRef {
+        LLVMBuildFCmp(self.builder, op.into(), lhs, rhs, "cmptmp\0".as_ptr().cast())
     }
 }
 impl Drop for LLVMWrapper {
@@ -201,6 +223,19 @@ impl Drop for LLVMWrapper {
             LLVMDisposePassBuilderOptions(self.pass_builder);
             LLVMDisposeBuilder(self.builder);
             LLVMContextDispose(self.context);
+        }
+    }
+}
+#[allow(clippy::from_over_into)]
+impl Into<LLVMRealPredicate> for ComparisionOpKind {
+    fn into(self) -> LLVMRealPredicate {
+        match self {
+            Self::Equals => LLVMRealPredicate::LLVMRealOEQ,
+            Self::Bigger => LLVMRealPredicate::LLVMRealOGT,
+            Self::BiggerOrEq => LLVMRealPredicate::LLVMRealOGE,
+            Self::Less => LLVMRealPredicate::LLVMRealOLT,
+            Self::LessOrEq => LLVMRealPredicate::LLVMRealOLE,
+            Self::NeEq => LLVMRealPredicate::LLVMRealONE
         }
     }
 }
