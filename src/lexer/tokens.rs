@@ -38,22 +38,11 @@ pub enum BinaryOperatorKind {
 #[derive(Debug, PartialEq)]
 pub enum ComparisionOpKind {
     Equals,         // ==
+    NeEq,           // !=
     Bigger,         // >
     BiggerOrEq,     // >=
     Less,           // <
     LessOrEq        // <=
-}
-#[allow(clippy::from_over_into)]
-impl Into<i32> for ComparisionOpKind {
-    fn into(self) -> i32 {
-        match self {
-            Self::Equals => 1,
-            Self::Bigger => 2,
-            Self::BiggerOrEq => 3,
-            Self::Less => 4,
-            Self::LessOrEq => 5
-        }
-    }
 }
 impl TryFrom<&str> for KeywordKind {
     type Error = ();
@@ -76,6 +65,7 @@ impl TryFrom<&str> for OperatorKind {
             "<=" => Ok(Self::Binary(BinaryOperatorKind::Comparision(ComparisionOpKind::LessOrEq))),
             ">=" => Ok(Self::Binary(BinaryOperatorKind::Comparision(ComparisionOpKind::BiggerOrEq))),
             "==" => Ok(Self::Binary(BinaryOperatorKind::Comparision(ComparisionOpKind::Equals))),
+            "!=" => Ok(Self::Binary(BinaryOperatorKind::Comparision(ComparisionOpKind::NeEq))),
             "+" => Ok(Self::Binary(BinaryOperatorKind::Addition)),
             "-" => Ok(Self::Binary(BinaryOperatorKind::Subtraction)),
             "*" => Ok(Self::Binary(BinaryOperatorKind::Multiplication)),
