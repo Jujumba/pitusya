@@ -35,6 +35,6 @@ pub enum Ast {
 }
 #[derive(Debug, PartialEq)]
 pub struct Proto {
-    pub name: String,
-    pub args: Vec<Ast>
+    pub(crate) name: String,
+    pub(crate) args: Vec<Ast>
 }
