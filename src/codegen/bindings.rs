@@ -148,7 +148,10 @@ impl LLVMWrapper {
         LLVMPositionBuilderAtEnd(self.builder, then);
         merge
     }
-    pub unsafe fn terminate_condition(&self, merge: LLVMBasicBlockRef) {
+    pub unsafe fn terminate_condition(&self, merge: LLVMBasicBlockRef, ret: bool) {
+        if !ret {
+            LLVMBuildBr(self.builder, merge);
+        }
         LLVMPositionBuilderAtEnd(self.builder, merge);
     }
     pub unsafe fn count_args(&self, function: LLVMValueRef) -> usize {

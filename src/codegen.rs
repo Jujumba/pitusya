@@ -103,7 +103,7 @@ impl Cg {
                 BinaryOperatorKind::Comparision(cmp) => unsafe {
                     let lhs = self.deref_or_generate(*left, named_values);
                     let rhs = self.deref_or_generate(*right, named_values);
-                    self.wrapper.cmp(lhs, rhs, cmp.into())
+                    self.wrapper.cmp(lhs, rhs, cmp)
                 },
                 BinaryOperatorKind::Assigment => unsafe {
                     if let Ast::IdentifierNode(ref ident) = *left {
@@ -122,6 +122,16 @@ impl Cg {
                 self.wrapper.ret(ret)
             },
             Ast::UnitNode(unit) => self.generate_ir(*unit, named_values),
+            Ast::IfNode { condition, body } => {
+                let condition = self.generate_ir(*condition, named_values);
+                let merge = unsafe { self.wrapper.create_condition(condition) };
+                let branch = body.iter().any(|ast| matches!(ast, Ast::RetNode(_))); // Ha-ha brrrrr
+                body.into_iter().for_each(|ast| {
+                    self.generate_ir(ast, named_values);
+                });
+                unsafe { self.wrapper.terminate_condition(merge, branch); }
+                condition // todo
+            }
             _ => abort!("Your code uses a not implemented yet feature. Thus aborting. Sorry"),
         }
     }
