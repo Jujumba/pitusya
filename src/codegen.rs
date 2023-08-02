@@ -33,6 +33,7 @@ impl Cg {
             _ => abort!("Please report how you have bypassed the parser"),
         }
     }
+    #[allow(clippy::too_many_lines)]
     fn generate_ir(&mut self, ast: Ast, named_values: &mut HashMap<String, Variable>) -> LLVMValueRef {
         match ast {
             Ast::ValueNode(literal) => {
@@ -71,13 +72,13 @@ impl Cg {
                     );
                 }
 
-                let mut args = Vec::with_capacity(argc);
+                let mut arguments = Vec::with_capacity(argc);
                 proto
                     .args
                     .into_iter()
-                    .for_each(|ast| args.push(self.deref_or_generate(ast, named_values)));
+                    .for_each(|ast| arguments.push(self.deref_or_generate(ast, named_values)));
 
-                unsafe { self.wrapper.call_function(function, argc, args.as_mut_ptr()) }
+                unsafe { self.wrapper.call_function(function, argc, arguments.as_mut_ptr()) }
             }
             Ast::BinaryNode { left, right, op } => match op {
                 BinaryOperatorKind::Addition => unsafe {

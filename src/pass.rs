@@ -2,6 +2,7 @@ use crate::abort_if_not;
 use crate::ast::Ast;
 
 pub struct PitusyaPassManager;
+#[allow(clippy::unused_self)]
 impl PitusyaPassManager {
     pub fn pipeline(&self, asts: &[Ast]) {
         for ast in asts {
@@ -24,7 +25,7 @@ impl PitusyaPassManager {
         stack.into_iter().for_each(|block| {
             let count = block.iter().filter(|ast| matches!(ast, Ast::RetNode(_))).count();
             abort_if_not!(count <= 1, "Error: function {} returns multiple values", name);
-        })
+        });
     }
     fn no_dead_code(&self, name: &str, body: &[Ast]) {
         let mut stack = vec![body]; // todo: Vec::with_capacity(body.iter().filter(|ast| matches!(ast, Ast::IfNode { .. } | Ast::WhileNode { .. })).count()) ??

@@ -1,3 +1,5 @@
+#![allow(clippy::wildcard_imports)]
+#![allow(clippy::cast_possible_truncation)]
 pub use llvm_sys::prelude::*;
 
 use std::ffi::CStr;
@@ -35,6 +37,7 @@ pub struct LLVMWrapper {
     jd: LLVMOrcJITDylibRef,
     jit: LLVMOrcLLJITRef,
 }
+#[allow(clippy::unused_self)]
 impl LLVMWrapper {
     fn null() -> Self {
         Self {
@@ -62,7 +65,7 @@ impl LLVMWrapper {
             LLVMCodeGenOptLevel::LLVMCodeGenLevelAggressive,
             LLVMRelocMode::LLVMRelocDefault,
             LLVMCodeModel::LLVMCodeModelJITDefault,
-        )
+        );
     }
     pub unsafe fn new() -> Self {
         let mut wrapper = Self::null();
@@ -84,7 +87,7 @@ impl LLVMWrapper {
 
         // Horrible...
         let mut address: LLVMOrcExecutorAddress = 0;
-        LLVMOrcLLJITLookup(self.jit, &mut address as *mut _, "main\0".as_ptr().cast());
+        LLVMOrcLLJITLookup(self.jit, std::ptr::addr_of_mut!(address), "main\0".as_ptr().cast());
         let p: fn() -> f64 = std::mem::transmute(address);
         let res = p() as i32;
 
@@ -93,7 +96,7 @@ impl LLVMWrapper {
         res
     }
     pub unsafe fn create_jit(&mut self) {
-        let err = LLVMOrcCreateLLJIT(&mut self.jit as *mut *mut _, LLVMOrcCreateLLJITBuilder());
+        let err = LLVMOrcCreateLLJIT(std::ptr::addr_of_mut!(self.jit), LLVMOrcCreateLLJITBuilder());
         if !err.is_null() {
             let msg = LLVMGetErrorMessage(err);
             abort!("{}", CStr::from_ptr(msg).to_str().unwrap()); // Todo: string is not deallocated
@@ -115,14 +118,14 @@ impl LLVMWrapper {
     }
     pub unsafe fn declare_function(&self, name: &str, argc: usize) -> LLVMValueRef {
         let name = CString::new(name).unwrap();
-        let mut args = Vec::with_capacity(argc);
+        let mut arguments = Vec::with_capacity(argc);
         for _ in 0..argc {
-            args.push(LLVMDoubleTypeInContext(self.context));
+            arguments.push(LLVMDoubleTypeInContext(self.context));
         }
         LLVMAddFunction(
             self.module,
             name.as_ptr(),
-            LLVMFunctionType(LLVMDoubleTypeInContext(self.context), args.as_mut_ptr(), argc as u32, 0),
+            LLVMFunctionType(LLVMDoubleTypeInContext(self.context), arguments.as_mut_ptr(), argc as u32, 0),
         )
     }
     pub unsafe fn create_function(&self, name: &str, argc: usize) -> LLVMValueRef {
@@ -184,24 +187,24 @@ impl LLVMWrapper {
     pub unsafe fn check_function(&self, function: LLVMValueRef) {
         LLVMVerifyFunction(function, LLVMVerifierFailureAction::LLVMAbortProcessAction);
     }
-    pub unsafe fn call_function(&self, callee: LLVMValueRef, argc: usize, args: *mut LLVMValueRef) -> LLVMValueRef {
+    pub unsafe fn call_function(&self, callee: LLVMValueRef, argc: usize, arguments: *mut LLVMValueRef) -> LLVMValueRef {
         LLVMBuildCall2(
             self.builder,
             LLVMGlobalGetValueType(callee),
             callee,
-            args,
+            arguments,
             argc as _,
             "calltmp\0".as_ptr().cast(),
         )
     }
-    pub unsafe fn create_var(&self, val: LLVMValueRef, name: &str) -> LLVMValueRef {
+    pub unsafe fn create_var(&self, value: LLVMValueRef, name: &str) -> LLVMValueRef {
         let name = CString::new(name).unwrap();
         let var = LLVMBuildAlloca(self.builder, LLVMDoubleTypeInContext(self.context), name.as_ptr());
-        self.assign2var(val, var);
+        self.assign2var(value, var);
         var
     }
-    pub unsafe fn assign2var(&self, var: LLVMValueRef, val: LLVMValueRef) {
-        LLVMBuildStore(self.builder, var, val);
+    pub unsafe fn assign2var(&self, var: LLVMValueRef, value: LLVMValueRef) {
+        LLVMBuildStore(self.builder, var, value);
     }
     pub unsafe fn deref(&self, v: LLVMValueRef, name: &str) -> LLVMValueRef {
         let name = CString::new(name).unwrap();

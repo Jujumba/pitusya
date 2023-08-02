@@ -1,6 +1,6 @@
 pub mod parser;
 
-use crate::lexer::tokens::*;
+use crate::lexer::tokens::{BinaryOperatorKind, LiteralKind};
 
 #[derive(Debug, PartialEq)]
 pub enum Ast {

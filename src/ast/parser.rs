@@ -4,7 +4,7 @@ use crate::abort;
 use crate::ast::Ast;
 use crate::input::InputFile;
 use crate::lexer::next_token;
-use crate::lexer::tokens::*;
+use crate::lexer::tokens::{BinaryOperatorKind, KeywordKind, OperatorKind, TokenKind};
 
 macro_rules! abort_syntax_analysis {
     ($pos: expr) => {
@@ -118,8 +118,8 @@ fn parse_block(input: &mut InputFile) -> Vec<Ast> {
 fn parse_expression(input: &mut InputFile) -> Ast {
     let ast = fetch_lhs(input, "an identifier or literal");
     let token = next_token(input);
-    match token.kind {
-        TokenKind::Operator(op) => match op {
+    if let TokenKind::Operator(op) = token.kind {
+        match op {
             OperatorKind::Binary(BinaryOperatorKind::Assigment) if matches!(ast, Ast::ValueNode(_)) => {
                 abort_syntax_analysis!(input.get_cursor(), format!("Cannot assign to the const-value of {ast:?}"));
             }
@@ -132,11 +132,10 @@ fn parse_expression(input: &mut InputFile) -> Ast {
                 input.move_back_cursor(token.len);
                 ast
             }
-        },
-        _ => {
-            input.move_back_cursor(token.len);
-            ast
         }
+    } else {
+        input.move_back_cursor(token.len);
+        ast
     }
 }
 fn parse_unit_expr(input: &mut InputFile) -> Ast {
