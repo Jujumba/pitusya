@@ -31,9 +31,6 @@ pub fn parse(input: &mut InputFile) -> Vec<Ast> {
             }),
             TokenKind::Keyword(KeywordKind::Extern) => {
                 ast.push(Ast::ExternNode(parse_prototype(input, true)));
-                if !matches!(next_token(input).kind, TokenKind::Operator(OperatorKind::Semicol)) {
-                    abort_syntax_analysis!(input.get_cursor(), "Missing a semicolon!");
-                }
             }
             TokenKind::EOF => break,
             e => abort_syntax_analysis!(input.get_cursor(), "`extern` or `fn`", e)
@@ -100,13 +97,8 @@ fn parse_block(input: &mut InputFile) -> Vec<Ast> {
             TokenKind::Identifier(_) | TokenKind::Literal(_) | TokenKind::Operator(OperatorKind::LParen) => {
                 input.move_back_cursor(t.len);
                 body.push(parse_expression(input));
-                let next = next_token(input).kind;
-                if !matches!(next, TokenKind::Operator(OperatorKind::Semicol)) {
-                    abort_syntax_analysis!(input.get_cursor(), "Missing a semicolon!");
-                }
             }
             TokenKind::Keyword(KeywordKind::Ret) => body.push(Ast::RetNode(Box::new(parse_expression(input)))),
-            TokenKind::Operator(OperatorKind::Semicol) => continue,
             TokenKind::Operator(OperatorKind::RCurly) => break,
             _ => {
                 abort_syntax_analysis!(input.get_cursor(), "Unexpected token");
