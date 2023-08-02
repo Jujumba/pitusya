@@ -132,6 +132,21 @@ impl Cg {
                 unsafe { self.wrapper.terminate_condition(merge, branch); }
                 condition // todo
             }
+            Ast::WhileNode { condition, body } => {
+                let (loop_body, merge) = unsafe {
+                    self.wrapper.create_loop()
+                };
+                // I don't care at this point, Ctrl+C/V goes brrrrr
+                let branch = body.iter().any(|ast| matches!(ast, Ast::RetNode(_))); // Ha-ha brrrrr
+                body.into_iter().for_each(|ast| {
+                    self.generate_ir(ast, named_values);
+                });
+                let condition = self.generate_ir(*condition, named_values);
+                unsafe {
+                    self.wrapper.terminate_loop(condition, loop_body, merge, branch);
+                }
+                std::ptr::null_mut()
+            }
             _ => abort!("Your code uses a not implemented yet feature. Thus aborting. Sorry"),
         }
     }

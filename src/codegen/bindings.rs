@@ -24,7 +24,6 @@ use llvm_sys::LLVMRealPredicate;
 use crate::abort;
 use crate::lexer::tokens::ComparisionOpKind;
 
-
 pub struct LLVMWrapper {
     context: LLVMContextRef,
     module: LLVMModuleRef,
@@ -138,12 +137,21 @@ impl LLVMWrapper {
         LLVMSetValueName2(param, argn.as_ptr(), argn.as_bytes().len());
         param
     }
+    #[inline]
+    unsafe fn get_current_function(&self) -> LLVMValueRef {
+        LLVMGetBasicBlockParent(LLVMGetInsertBlock(self.builder))
+    }
     pub unsafe fn create_condition(&self, cond: LLVMValueRef) -> LLVMBasicBlockRef {
-        let function = LLVMGetBasicBlockParent(LLVMGetInsertBlock(self.builder));
+        let function = self.get_current_function();
 
         let then = LLVMAppendBasicBlockInContext(self.context, function, "then\0".as_ptr().cast());
         let merge = LLVMAppendBasicBlockInContext(self.context, function, "merge\0".as_ptr().cast());
-        LLVMBuildCondBr(self.builder, self.i1cmp(cond, self.gen_fp(0.0), ComparisionOpKind::NeEq), then, merge);
+        LLVMBuildCondBr(
+            self.builder,
+            self.i1cmp(cond, self.gen_fp(0.0), ComparisionOpKind::NeEq),
+            then,
+            merge,
+        );
 
         LLVMPositionBuilderAtEnd(self.builder, then);
         merge
@@ -151,6 +159,22 @@ impl LLVMWrapper {
     pub unsafe fn terminate_condition(&self, merge: LLVMBasicBlockRef, ret: bool) {
         if !ret {
             LLVMBuildBr(self.builder, merge);
+        }
+        LLVMPositionBuilderAtEnd(self.builder, merge);
+    }
+    pub unsafe fn create_loop(&self) -> (LLVMBasicBlockRef, LLVMBasicBlockRef) {
+        let function = self.get_current_function();
+        let loop_body = LLVMAppendBasicBlockInContext(self.context, function, "loop\0".as_ptr().cast());
+        let merge = LLVMAppendBasicBlockInContext(self.context, function, "merge\0".as_ptr().cast());
+        LLVMBuildBr(self.builder, loop_body);
+
+        LLVMPositionBuilderAtEnd(self.builder, loop_body);
+
+        (loop_body, merge)
+    }
+    pub unsafe fn terminate_loop(&self, cond: LLVMValueRef, loop_body: LLVMBasicBlockRef, merge: LLVMBasicBlockRef, ret: bool) {
+        if !ret {
+            LLVMBuildCondBr(self.builder, self.i1cmp(cond, self.gen_fp(0.0), ComparisionOpKind::NeEq), loop_body, merge);
         }
         LLVMPositionBuilderAtEnd(self.builder, merge);
     }
@@ -207,7 +231,7 @@ impl LLVMWrapper {
         LLVMBuildFDiv(self.builder, lhs, rhs, "divtmp\0".as_ptr().cast())
     }
     pub unsafe fn cmp(&self, lhs: LLVMValueRef, rhs: LLVMValueRef, op: ComparisionOpKind) -> LLVMValueRef {
-        let cmp = LLVMBuildFCmp(self.builder, op.into(), lhs, rhs, "cmptmp\0".as_ptr().cast());
+        let cmp = self.i1cmp(lhs, rhs, op);
         LLVMBuildSIToFP(
             self.builder,
             cmp,
@@ -238,7 +262,7 @@ impl Into<LLVMRealPredicate> for ComparisionOpKind {
             Self::BiggerOrEq => LLVMRealPredicate::LLVMRealOGE,
             Self::Less => LLVMRealPredicate::LLVMRealOLT,
             Self::LessOrEq => LLVMRealPredicate::LLVMRealOLE,
-            Self::NeEq => LLVMRealPredicate::LLVMRealONE
+            Self::NeEq => LLVMRealPredicate::LLVMRealONE,
         }
     }
 }
