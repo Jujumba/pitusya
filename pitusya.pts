@@ -1,6 +1,16 @@
 fn slow_inverse_square_root(x) {
-    ret 1 / x * x;
+    ret 1 / x * x
+}
+fn loops_are_working() {
+    let a = 0.0
+    while a < 100 {
+        a = a + 1
+        if a == 44 {
+            ret a
+        }
+    }
+    ret 0
 }
 fn main() {
-    ret slow_inverse_square_root(4);
+    ret loops_are_working()
 }

@@ -11,10 +11,20 @@ The language with no superpowers (no standard library, only one type - a 64 bit 
 ## Syntax
 ```pitusya
 fn slow_inverse_square_root(x) {
-    ret 1 / x * x;
+    ret 1 / x * x
+}
+fn loops_are_working() {
+    let a = 0.0
+    while a < 100 {
+        a = a + 1
+        if a == 44 {
+            ret a
+        }
+    }
+    ret 0
 }
 fn main() {
-    ret slow_inverse_square_root(4);
+    ret loops_are_working()
 }
 ```
 
@@ -33,8 +43,8 @@ fn main() {
 
 # Installation
 ## Prerequisites 
-1) LLVM-16 and Clang installed (if you are running on LLVM-15 or lower, specify your version in the .env file)
-2) Rust™up installed
+1. LLVM-16 and Clang installed (if you are running on LLVM-15 or lower, specify your version in the .env file)
+2. Rust™up installed
 
 ## Manual building
 Manual building is more prefereable since intalls the latest version
