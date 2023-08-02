@@ -43,14 +43,12 @@ fn main() {
 
 # Installation
 ## Prerequisites 
-1. LLVM-16 and Clang installed (if you are running on LLVM-15 or lower, specify your version in the .env file)
+1. LLVM-16 and Clang installed
 2. Rust™up installed
 
 ## Manual building
 Manual building is more prefereable since intalls the latest version
 ```shell
-# Check your LLVM version with: `llvm-config --version`
-# And specify it if required
 $ git clone https://github.com/Jujumba/pitusya
 $ cargo install --path pitusya
 # Great! Pitusya is installed now 
@@ -58,6 +56,5 @@ $ cargo install --path pitusya
 
 ## Via Cargo
 ```shell
-# Requires LLVM-16
 $ cargo install pitusya
 ```
