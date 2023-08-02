@@ -7,7 +7,7 @@ impl PitusyaPassManager {
         for ast in asts {
             if let Ast::FunctionNode { proto, body } = ast {
                 self.terminated(&proto.name, body);
-                // self.no_dead_code(&proto.name, body);
+                self.no_dead_code(&proto.name, body);
             }
         }
     }
