@@ -45,9 +45,7 @@ fn parse_prototype(input: &mut InputFile, definition: bool) -> Proto {
     let name_token = next_token(input);
     let name = match name_token.kind {
         TokenKind::Identifier(name) => name,
-        e => {
-            abort_syntax_analysis!(input.get_cursor(), "function's name in its definition", e);
-        }
+        e => abort_syntax_analysis!(input.get_cursor(), "function's name in its definition", e)
     };
 
     match next_token(input).kind {
