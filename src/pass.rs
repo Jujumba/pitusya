@@ -7,6 +7,7 @@ impl PitusyaPassManager {
         for ast in asts {
             if let Ast::FunctionNode { proto, body } = ast {
                 self.terminated(&proto.name, body);
+                // self.no_dead_code(&proto.name, body);
             }
         }
     }
@@ -24,5 +25,21 @@ impl PitusyaPassManager {
             let count = block.iter().filter(|ast| matches!(ast, Ast::RetNode(_))).count();
             abort_if_not!(count <= 1, "Error: function {} returns multiple values", name);
         })
+    }
+    fn no_dead_code(&self, name: &str, body: &[Ast]) {
+        let mut stack = vec![body]; // todo: Vec::with_capacity(body.iter().filter(|ast| matches!(ast, Ast::IfNode { .. } | Ast::WhileNode { .. })).count()) ??
+        while let Some(body) = stack.pop() {
+            body.iter()
+                .filter(|ast| matches!(ast, Ast::IfNode { .. } | Ast::WhileNode { .. }))
+                .for_each(|body| match body {
+                    Ast::IfNode { body, .. } | Ast::WhileNode { body, .. } => stack.push(body),
+                    _ => (),
+                });
+            abort_if_not!(
+                body.iter().skip_while(|ast| !matches!(ast, Ast::RetNode(_))).nth(1).is_none(),
+                "Error: unreachable code in function {}",
+                name
+            );
+        }
     }
 }
