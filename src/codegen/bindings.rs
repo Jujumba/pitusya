@@ -105,6 +105,9 @@ impl LLVMWrapper {
         self.execution_sesion = LLVMOrcLLJITGetExecutionSession(self.jit);
         self.jd = LLVMOrcLLJITGetMainJITDylib(self.jit);
         LLVMLinkInMCJIT();
+        
+        self.link_with_process();
+        self.link_with_runtime();
     }
     pub unsafe fn run_passes(&self) {
         LLVMRunPasses(
@@ -244,6 +247,40 @@ impl LLVMWrapper {
     }
     unsafe fn i1cmp(&self, lhs: LLVMValueRef, rhs: LLVMValueRef, op: ComparisionOpKind) -> LLVMValueRef {
         LLVMBuildFCmp(self.builder, op.into(), lhs, rhs, "cmptmp\0".as_ptr().cast())
+    }
+    fn global_prefix(&self) -> i8{
+        unsafe { LLVMOrcLLJITGetGlobalPrefix(self.jit) }
+    }
+    unsafe fn link_with_process(&self) {
+        let mut proc_syms_gen: LLVMOrcDefinitionGeneratorRef = std::ptr::null_mut();
+        let err = LLVMOrcCreateDynamicLibrarySearchGeneratorForProcess(
+            &mut proc_syms_gen as _,
+            self.global_prefix(),
+            None,
+            std::ptr::null_mut(),
+        );
+        if !err.is_null() {
+            let msg = LLVMGetErrorMessage(err);
+            libc::printf("%s\0".as_ptr().cast(), msg);
+            abort!("Link error!");
+        }
+        LLVMOrcJITDylibAddGenerator(self.jd, proc_syms_gen);
+    }
+    unsafe fn link_with_runtime(&self) {
+        let mut proc_syms_gen: LLVMOrcDefinitionGeneratorRef = std::ptr::null_mut();
+        let err = LLVMOrcCreateDynamicLibrarySearchGeneratorForPath(
+            std::ptr::addr_of_mut!(proc_syms_gen),
+            "libpitusya.so\0".as_ptr().cast(),
+            self.global_prefix(),
+            None,
+            std::ptr::null_mut()
+        );
+        if !err.is_null() {
+            let msg = LLVMGetErrorMessage(err);
+            libc::printf("%s\0".as_ptr().cast(), msg);
+            abort!("Link error!");
+        }
+        LLVMOrcJITDylibAddGenerator(self.jd, proc_syms_gen);
     }
 }
 impl Drop for LLVMWrapper {
