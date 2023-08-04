@@ -3,11 +3,11 @@ mod var;
 
 use std::collections::HashMap;
 
-use bindings::*;
+use bindings::{LLVMWrapper, LLVMValueRef};
 use var::Variable;
 
 use crate::abort;
-use crate::ast::*;
+use crate::ast::{Ast, Proto};
 use crate::lexer::tokens::{BinaryOperatorKind, LiteralKind};
 
 pub struct Cg {
@@ -28,7 +28,10 @@ impl Cg {
                 }
                 self.create_function(proto, body);
             }
-            Ast::ExternNode(_) => abort!("Extern definitons are not implemented yet. Sorry"),
+            Ast::ExternNode(proto) => {
+                let f = unsafe { self.wrapper.declare_function(&proto.name, proto.args.len()) };
+                self.vtable.insert(proto.name, f);
+            },
             Ast::EOF => (),
             _ => abort!("Please report how you have bypassed the parser"),
         }
