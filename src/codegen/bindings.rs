@@ -268,9 +268,14 @@ impl LLVMWrapper {
     }
     unsafe fn link_with_runtime(&self) {
         let mut proc_syms_gen: LLVMOrcDefinitionGeneratorRef = std::ptr::null_mut();
+        let pitusya_std = CString::new(if cfg!(windows) {
+            "pitusyastd.dll"
+        } else {
+            "libpitusyastd.so"
+        }).unwrap();
         let err = LLVMOrcCreateDynamicLibrarySearchGeneratorForPath(
             std::ptr::addr_of_mut!(proc_syms_gen),
-            "libpitusya.so\0".as_ptr().cast(),
+            pitusya_std.as_ptr(),
             self.global_prefix(),
             None,
             std::ptr::null_mut()
