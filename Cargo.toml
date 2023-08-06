@@ -8,7 +8,7 @@ edition = "2021"
 license = "MIT"
 
 [workspace]
-members = ["libpitusya"]
+members = ["pitusyastd"]
 
 [dependencies]
 libc = "0.2.146"

@@ -1,8 +1,7 @@
 [package]
-name = "libpitusya"
+name = "pitusyastd"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "pitusya"
 crate-type = ["rlib", "dylib"]
