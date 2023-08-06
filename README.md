@@ -31,13 +31,13 @@ fn main() {
 A bit complicated example:
 ```pitusya
 fn complex(a, b, c) {
-    ret a * b / (c * a) + (c / 8) * (a * a);
+    ret a * b / (c * a) + (c / 8) * (a * a)
 }
 fn main() {
-    let a = 11;
-    let b = 15;
-    let c = a = b = 10000;
-    ret complex(a, b, c);
+    let a = 11
+    let b = 15
+    let c = a = b = 10000
+    ret complex(a, b, c)
 }
 ```
 
