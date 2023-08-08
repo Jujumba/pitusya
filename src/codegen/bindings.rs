@@ -213,7 +213,7 @@ impl LLVMWrapper {
         let name = CString::new(name).unwrap();
         LLVMBuildLoad2(self.builder, LLVMDoubleTypeInContext(self.context), v, name.as_ptr())
     }
-    pub unsafe fn ret(&self, v: LLVMValueRef) -> LLVMValueRef {
+    pub unsafe fn build_return(&self, v: LLVMValueRef) -> LLVMValueRef {
         LLVMBuildRet(self.builder, v)
     }
     pub unsafe fn gen_fp(&self, n: f64) -> LLVMValueRef {

@@ -3,12 +3,12 @@ mod var;
 
 use std::collections::HashMap;
 
-use bindings::{LLVMWrapper, LLVMValueRef};
+use bindings::{LLVMValueRef, LLVMWrapper};
 use var::Variable;
 
-use crate::abort;
 use crate::ast::{Ast, Proto};
 use crate::lexer::tokens::{BinaryOperatorKind, LiteralKind};
+use crate::{abort, abort_if_not};
 
 pub struct Cg {
     vtable: HashMap<String, LLVMValueRef>,
@@ -23,15 +23,13 @@ impl Cg {
                 if &proto.name == "main" {
                     self.contains_main = true;
                 }
-                if self.vtable.contains_key(&proto.name) {
-                    abort!("Function {} already exists!", proto.name);
-                }
+                abort_if_not!(!self.vtable.contains_key(&proto.name), "Function {} already exists!", proto.name);
                 self.create_function(proto, body);
             }
             Ast::ExternNode(proto) => {
                 let f = unsafe { self.wrapper.declare_function(&proto.name, proto.args.len()) };
                 self.vtable.insert(proto.name, f);
-            },
+            }
             Ast::EOF => (),
             _ => abort!("Please report how you have bypassed the parser"),
         }
@@ -123,7 +121,7 @@ impl Cg {
             },
             Ast::RetNode(ret) => unsafe {
                 let ret = self.deref_or_generate(*ret, named_values);
-                self.wrapper.ret(ret)
+                self.wrapper.build_return(ret)
             },
             Ast::UnitNode(unit) => self.generate_ir(*unit, named_values),
             Ast::IfNode { condition, body } => {
@@ -133,13 +131,13 @@ impl Cg {
                 body.into_iter().for_each(|ast| {
                     self.generate_ir(ast, named_values);
                 });
-                unsafe { self.wrapper.terminate_condition(merge, branch); }
-                condition // todo
+                unsafe {
+                    self.wrapper.terminate_condition(merge, branch);
+                }
+                std::ptr::null_mut() // if is statement
             }
             Ast::WhileNode { condition, body } => {
-                let (loop_body, merge) = unsafe {
-                    self.wrapper.create_loop()
-                };
+                let (loop_body, merge) = unsafe { self.wrapper.create_loop() };
                 // I don't care at this point, Ctrl+C/V goes brrrrr
                 let branch = body.iter().any(|ast| matches!(ast, Ast::RetNode(_))); // Ha-ha brrrrr
                 body.into_iter().for_each(|ast| {
@@ -157,17 +155,13 @@ impl Cg {
     fn set_arguments(&mut self, function: LLVMValueRef, args: Vec<Ast>, placeholder: &mut HashMap<String, Variable>) {
         for (i, arg) in args.into_iter().enumerate() {
             if let Ast::IdentifierNode(arg) = arg {
-                let param = unsafe {
-                    self.wrapper.set_param2function(function, &arg, i)
-                };
+                let param = unsafe { self.wrapper.set_param2function(function, &arg, i) };
                 placeholder.insert(arg, Variable::new(param, true));
             }
         }
     }
     fn create_function(&mut self, proto: Proto, body: Vec<Ast>) {
-        let function = unsafe {
-            self.wrapper.create_function(&proto.name, proto.args.len())
-        };
+        let function = unsafe { self.wrapper.create_function(&proto.name, proto.args.len()) };
 
         let mut named_values = HashMap::<String, Variable>::new();
         self.set_arguments(function, proto.args, &mut named_values);
@@ -195,9 +189,7 @@ impl Cg {
         self.generate_ir(ast, named_values)
     }
     pub fn exec(mut self) -> i32 {
-        if !self.contains_main {
-            abort!("No main function. Consider creating it.");
-        }
+        abort_if_not!(self.contains_main, "No main function. Consider creating it");
         unsafe {
             self.wrapper.run_passes();
             self.wrapper.jit_main()
