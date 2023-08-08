@@ -7,6 +7,7 @@
 
 ## Overview
 The language with no superpowers (no standard library, only one type - a 64 bit width floating point number).
+Edit: Standard library has beed added 😎
 
 ## Syntax
 ```pitusya
@@ -30,6 +31,8 @@ fn main() {
 
 A bit complicated example:
 ```pitusya
+extern print(n)
+
 fn complex(a, b, c) {
     ret a * b / (c * a) + (c / 8) * (a * a)
 }
@@ -37,7 +40,8 @@ fn main() {
     let a = 11
     let b = 15
     let c = a = b = 10000
-    ret complex(a, b, c)
+    print(complex(a, b, c))
+    ret 0
 }
 ```
 
