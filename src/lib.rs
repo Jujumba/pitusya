@@ -17,6 +17,12 @@ macro_rules! abort {
 }
 #[macro_export]
 macro_rules! abort_if_not {
+    ($cond:expr, $msg: expr) => {
+        if ! $cond {
+            eprintln!($msg);
+            ::std::process::exit(18);
+        }
+    };
     ($cond:expr, $msg: expr, $($p:expr),*) => {
         if ! $cond {
             eprintln!($msg, $($p),*);
