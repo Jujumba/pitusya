@@ -14,6 +14,7 @@ members = ["pitusyastd"]
 libc = "0.2.146"
 llvm-sys = "160.1.3"
 regex = "1.8.3"
+pitusyastd = { path = "pitusyastd" }
 
 [profile.release]
 strip = true
