@@ -248,8 +248,9 @@ impl LLVMWrapper {
     unsafe fn i1cmp(&self, lhs: LLVMValueRef, rhs: LLVMValueRef, op: ComparisionOpKind) -> LLVMValueRef {
         LLVMBuildFCmp(self.builder, op.into(), lhs, rhs, "cmptmp\0".as_ptr().cast())
     }
-    fn global_prefix(&self) -> i8 {
-        unsafe { LLVMOrcLLJITGetGlobalPrefix(self.jit) }
+    #[inline]
+    unsafe fn global_prefix(&self) -> i8 {
+        LLVMOrcLLJITGetGlobalPrefix(self.jit)
     }
     unsafe fn link_with_process(&self) {
         let mut proc_syms_gen: LLVMOrcDefinitionGeneratorRef = std::ptr::null_mut();
@@ -259,7 +260,7 @@ impl LLVMWrapper {
             None,
             std::ptr::null_mut(),
         );
-        abort_if_not!(!err.is_null(), "Link error!");
+        abort_if_not!(err.is_null(), "Link error!");
         self.link(proc_syms_gen);
     }
     unsafe fn link_with_runtime(&self) {
@@ -276,7 +277,7 @@ impl LLVMWrapper {
             None,
             std::ptr::null_mut()
         );
-        abort_if_not!(!err.is_null(), "Link error!");
+        abort_if_not!(err.is_null(), "Link error!");
         self.link(proc_syms_gen);
     }
     #[inline]
