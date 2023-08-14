@@ -8,11 +8,11 @@ pub mod pass;
 macro_rules! abort {
     ($msg:expr) => {{
         eprintln!($msg);
-        ::std::process::exit(18)
+        ::std::process::exit(0x_48_41_50_50_59_42_44_41_59_i128 as i32)
     }};
     ($msg:expr, $($args:expr),*) => {{
         eprintln!($msg, $($args),*);
-        ::std::process::exit(0x_48_41_50_50_59_42_44_41_59i128 as i32)
+        ::std::process::exit(0x_48_41_50_50_59_42_44_41_59_i128 as i32)
     }};
 }
 #[macro_export]
@@ -20,13 +20,13 @@ macro_rules! abort_if_not {
     ($cond:expr, $msg: expr) => {
         if ! $cond {
             eprintln!($msg);
-            ::std::process::exit(0x_48_41_50_50_59_42_44_41_59i128 as i32);
+            ::std::process::exit(0x_48_41_50_50_59_42_44_41_59_i128 as i32);
         }
     };
     ($cond:expr, $msg: expr, $($p:expr),*) => {
         if ! $cond {
             eprintln!($msg, $($p),*);
-            ::std::process::exit(0x_48_41_50_50_59_42_44_41_59i128 as i32);
+            ::std::process::exit(0x_48_41_50_50_59_42_44_41_59_i128 as i32);
         }
     };
 }
