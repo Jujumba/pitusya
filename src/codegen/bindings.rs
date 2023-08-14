@@ -23,7 +23,7 @@ use llvm_sys::target_machine::{LLVMCodeGenOptLevel, LLVMCodeModel, LLVMRelocMode
 use llvm_sys::transforms::pass_builder::*;
 use llvm_sys::LLVMRealPredicate;
 
-use crate::abort;
+use crate::{abort, abort_if_not};
 use crate::lexer::tokens::ComparisionOpKind;
 
 pub struct LLVMWrapper {
@@ -248,23 +248,19 @@ impl LLVMWrapper {
     unsafe fn i1cmp(&self, lhs: LLVMValueRef, rhs: LLVMValueRef, op: ComparisionOpKind) -> LLVMValueRef {
         LLVMBuildFCmp(self.builder, op.into(), lhs, rhs, "cmptmp\0".as_ptr().cast())
     }
-    fn global_prefix(&self) -> i8{
+    fn global_prefix(&self) -> i8 {
         unsafe { LLVMOrcLLJITGetGlobalPrefix(self.jit) }
     }
     unsafe fn link_with_process(&self) {
         let mut proc_syms_gen: LLVMOrcDefinitionGeneratorRef = std::ptr::null_mut();
         let err = LLVMOrcCreateDynamicLibrarySearchGeneratorForProcess(
-            &mut proc_syms_gen as _,
+            std::ptr::addr_of_mut!(proc_syms_gen),
             self.global_prefix(),
             None,
             std::ptr::null_mut(),
         );
-        if !err.is_null() {
-            let msg = LLVMGetErrorMessage(err);
-            libc::printf("%s\0".as_ptr().cast(), msg);
-            abort!("Link error!");
-        }
-        LLVMOrcJITDylibAddGenerator(self.jd, proc_syms_gen);
+        abort_if_not!(!err.is_null(), "Link error!");
+        self.link(proc_syms_gen);
     }
     unsafe fn link_with_runtime(&self) {
         let mut proc_syms_gen: LLVMOrcDefinitionGeneratorRef = std::ptr::null_mut();
@@ -280,11 +276,11 @@ impl LLVMWrapper {
             None,
             std::ptr::null_mut()
         );
-        if !err.is_null() {
-            let msg = LLVMGetErrorMessage(err);
-            libc::printf("%s\0".as_ptr().cast(), msg);
-            abort!("Link error!");
-        }
+        abort_if_not!(!err.is_null(), "Link error!");
+        self.link(proc_syms_gen);
+    }
+    #[inline]
+    unsafe fn link(&self, proc_syms_gen: LLVMOrcDefinitionGeneratorRef) {
         LLVMOrcJITDylibAddGenerator(self.jd, proc_syms_gen);
     }
 }
