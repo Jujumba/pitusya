@@ -2,7 +2,7 @@ use super::Proto;
 
 use crate::abort;
 use crate::ast::Ast;
-use crate::input::InputFile;
+use crate::input::CursoredFile;
 use crate::lexer::next_token;
 use crate::lexer::tokens::{BinaryOperatorKind, KeywordKind, OperatorKind, TokenKind};
 
@@ -16,12 +16,14 @@ macro_rules! abort_syntax_analysis {
     ($pos: expr, $expected: expr, $error: expr) => {
         abort!(
             "Compilation error at position {}:\n\tExpected {}, but got {:?}",
-            $pos, $expected, $error
+            $pos,
+            $expected,
+            $error
         )
     };
 }
 
-pub fn parse(input: &mut InputFile) -> Vec<Ast> {
+pub fn parse(input: &mut CursoredFile) -> Vec<Ast> {
     let mut ast = Vec::new();
     loop {
         match next_token(input).kind {
@@ -33,16 +35,16 @@ pub fn parse(input: &mut InputFile) -> Vec<Ast> {
                 ast.push(Ast::ExternNode(parse_prototype(input, true)));
             }
             TokenKind::EOF => break,
-            e => abort_syntax_analysis!(input.get_cursor(), "`extern` or `fn`", e)
+            e => abort_syntax_analysis!(input.get_cursor(), "`extern` or `fn`", e),
         }
     }
     ast
 }
-fn parse_prototype(input: &mut InputFile, definition: bool) -> Proto {
+fn parse_prototype(input: &mut CursoredFile, definition: bool) -> Proto {
     let name_token = next_token(input);
     let name = match name_token.kind {
         TokenKind::Identifier(name) => name,
-        e => abort_syntax_analysis!(input.get_cursor(), "function's name in its definition", e)
+        e => abort_syntax_analysis!(input.get_cursor(), "function's name in its definition", e),
     };
 
     match next_token(input).kind {
@@ -76,7 +78,7 @@ fn parse_prototype(input: &mut InputFile, definition: bool) -> Proto {
     }
     Proto { name, args }
 }
-fn parse_block(input: &mut InputFile) -> Vec<Ast> {
+fn parse_block(input: &mut CursoredFile) -> Vec<Ast> {
     let curly = next_token(input);
     if curly.kind != TokenKind::Operator(OperatorKind::LCurly) {
         abort_syntax_analysis!(input.get_cursor(), "`{`", curly);
@@ -105,7 +107,7 @@ fn parse_block(input: &mut InputFile) -> Vec<Ast> {
     }
     body
 }
-fn parse_expression(input: &mut InputFile) -> Ast {
+fn parse_expression(input: &mut CursoredFile) -> Ast {
     let ast = fetch_lhs(input, "an identifier or literal");
     let token = next_token(input);
     if let TokenKind::Operator(op) = token.kind {
@@ -128,7 +130,7 @@ fn parse_expression(input: &mut InputFile) -> Ast {
         ast
     }
 }
-fn parse_unit_expr(input: &mut InputFile) -> Ast {
+fn parse_unit_expr(input: &mut CursoredFile) -> Ast {
     let ast = fetch_lhs(input, "an identifier or literal");
     match next_token(input).kind {
         TokenKind::Operator(op) => match op {
@@ -143,7 +145,7 @@ fn parse_unit_expr(input: &mut InputFile) -> Ast {
         e => abort_syntax_analysis!(input.get_cursor(), "`)`", e),
     }
 }
-fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
+fn fetch_lhs(input: &mut CursoredFile, expected: &str) -> Ast {
     let lhs_token = next_token(input);
     match lhs_token.kind {
         TokenKind::Identifier(_) => {
@@ -155,7 +157,7 @@ fn fetch_lhs(input: &mut InputFile, expected: &str) -> Ast {
         e => abort_syntax_analysis!(input.get_cursor(), expected, e),
     }
 }
-fn fetch_ident_or_call(input: &mut InputFile) -> Ast {
+fn fetch_ident_or_call(input: &mut CursoredFile) -> Ast {
     let name_token = next_token(input);
     let name = match name_token.kind {
         TokenKind::Identifier(i) => i,
@@ -169,7 +171,7 @@ fn fetch_ident_or_call(input: &mut InputFile) -> Ast {
     input.move_back_cursor(name_token.len);
     Ast::CallNode(parse_prototype(input, false))
 }
-fn parse_let_expr(input: &mut InputFile) -> Ast {
+fn parse_let_expr(input: &mut CursoredFile) -> Ast {
     let token = next_token(input);
     match token.kind {
         TokenKind::Identifier(assignee) => match next_token(input).kind {

@@ -1,15 +1,40 @@
 use std::cell::RefCell;
 use std::fs;
-use std::io;
+use std::path::PathBuf;
 
+pub use clap::{Parser, Subcommand};
+
+use crate::abort;
+
+#[derive(Parser)]
+#[command(author, version, about)]
+pub struct Cli {
+    file: PathBuf
+}
 #[derive(Debug, PartialEq, Clone)]
-pub struct InputFile {
+pub struct CursoredFile {
     content: Vec<char>,
     content_str: String,
     cursor: RefCell<usize>,
 }
-
-impl InputFile {
+impl From<Cli> for PathBuf {
+    fn from(value: Cli) -> Self {
+        value.file
+    }
+}
+impl CursoredFile {
+    pub fn new<P: Into<PathBuf>>(file_name: P) -> Self {
+        let file_name = file_name.into();
+        let content = match fs::read_to_string(&file_name) {
+            Ok(content) => content,
+            Err(_) => abort!("File {} does not exist!", file_name.display()),
+        };
+        Self {
+            content: content.chars().collect(),
+            content_str: content,
+            cursor: RefCell::new(0),
+        }
+    }
     #[inline]
     pub fn current_char(&self) -> char {
         self.content[*self.cursor.borrow()]
@@ -38,16 +63,8 @@ impl InputFile {
             self.move_cursor(1);
         }
     }
-    pub fn new(file_name: &str) -> io::Result<Self> {
-        let content = fs::read_to_string(file_name)?;
-        Ok(Self {
-            content: content.chars().collect(),
-            content_str: content,
-            cursor: RefCell::new(0)
-        })
-    }
 }
-impl AsRef<str> for InputFile {
+impl AsRef<str> for CursoredFile {
     fn as_ref(&self) -> &str {
         &self.content_str
     }

@@ -5,13 +5,13 @@ use std::sync::OnceLock;
 use regex::Regex;
 use tokens::{KeywordKind, LiteralKind, OperatorKind, Token, TokenKind};
 
-use crate::input::InputFile;
+use crate::input::CursoredFile;
 
 type Handler = dyn Fn(&str) -> TokenKind + Sync + Send;
 
 static SPEC: OnceLock<Vec<(Regex, Box<Handler>)>> = OnceLock::new();
 
-pub fn next_token(input: &mut InputFile) -> Token {
+pub fn next_token(input: &mut CursoredFile) -> Token {
     input.skip_spaces();
     if input.out_of_bounds() {
         return Token::eof();
@@ -26,7 +26,7 @@ pub fn next_token(input: &mut InputFile) -> Token {
                 let kind = closure(m.as_str());
                 return Token { kind, len };
             }
-            _ => ()
+            _ => (),
         }
     }
     let c = input.current_char();
@@ -39,25 +39,25 @@ fn get_specification() -> &'static Vec<(Regex, Box<Handler>)> {
         vec![
             (
                 Regex::new(r"([0-9]*[.])?[0-9]+").unwrap(),
-                Box::new(|s| TokenKind::Literal(LiteralKind::Num(s.parse().unwrap())))
+                Box::new(|s| TokenKind::Literal(LiteralKind::Num(s.parse().unwrap()))),
             ),
             (
                 Regex::new("\"[a-zA-Z0-0]+\"").unwrap(),
-                Box::new(|s| TokenKind::Literal(LiteralKind::Str(s.into())))
+                Box::new(|s| TokenKind::Literal(LiteralKind::Str(s.into()))),
             ),
             (
                 Regex::new(r"[_a-zA-Z0-9]+").unwrap(),
                 Box::new(|s| match KeywordKind::try_from(s) {
                     Ok(keyword) => TokenKind::Keyword(keyword),
-                    _ => TokenKind::Identifier(s.into())
-                })
+                    _ => TokenKind::Identifier(s.into()),
+                }),
             ),
             (
                 Regex::new(r"<=|>=|==|!=|=|\+|-|\*|/|<|>|;|,|\(|\)|\{|\}").unwrap(),
                 Box::new(|s| match OperatorKind::try_from(s) {
                     Ok(operator) => TokenKind::Operator(operator),
-                    _ => TokenKind::Undefined(s.chars().next().unwrap())
-                })
+                    _ => TokenKind::Undefined(s.chars().next().unwrap()),
+                }),
             ),
         ]
     })

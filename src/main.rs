@@ -1,18 +1,23 @@
-use std::env;
 use std::process::ExitCode;
 
-use pitusya::{abort, abort_if_not};
+use clap::Parser;
+
 use pitusya::ast::parser::parse;
 use pitusya::ast::Ast;
 use pitusya::codegen::Cg;
+use pitusya::input::{CursoredFile, Cli};
 use pitusya::pass::PitusyaPassManager;
-use pitusya::input::InputFile;
+use pitusya::abort;
 
 fn main() -> ExitCode {
-    let args = env::args().collect::<Vec<String>>();
-    abort_if_not!(args.len() >= 2, "Error: no input file"); 
-    let file = &args[1];
-    let mut input = InputFile::new(file).unwrap_or_else(|_| abort!("Error: File {file} doesn't exist!"));
+    let cli = match Cli::try_parse() {
+        Ok(cli) => cli,
+        Err(e) => {
+            e.print().unwrap();
+            abort!() // I need my special exit code ^.^
+        }
+    };
+    let mut input = CursoredFile::new(cli);
 
     let mut cg = Cg::default();
     let pm = PitusyaPassManager;
