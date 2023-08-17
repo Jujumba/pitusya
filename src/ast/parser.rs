@@ -100,9 +100,7 @@ fn parse_block(input: &mut InputFile) -> Vec<Ast> {
             }
             TokenKind::Keyword(KeywordKind::Ret) => body.push(Ast::RetNode(Box::new(parse_expression(input)))),
             TokenKind::Operator(OperatorKind::RCurly) => break,
-            _ => {
-                abort_syntax_analysis!(input.get_cursor(), "Unexpected token");
-            }
+            _ => abort_syntax_analysis!(input.get_cursor(), "Unexpected token"),
         }
     }
     body
