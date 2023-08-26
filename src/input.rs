@@ -7,15 +7,22 @@ pub use clap::{Parser, Subcommand};
 use crate::abort;
 
 #[derive(Parser)]
-#[command(author, version, about)]
+#[command(
+    author = "Jujumba",
+    version,
+    about = "
+The Pitusya Programming Language (=^ ◡ ^=)
+"
+)]
 pub struct Cli {
-    file: PathBuf
+    file: PathBuf,
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct CursoredFile {
-    content: Vec<char>,
-    content_str: String,
-    cursor: RefCell<usize>,
+    pub(crate) name: PathBuf,
+    pub(crate) content: Vec<char>,
+    pub(crate) content_str: String,
+    pub(crate) cursor: RefCell<usize>,
 }
 impl From<Cli> for PathBuf {
     fn from(value: Cli) -> Self {
@@ -30,6 +37,7 @@ impl CursoredFile {
             Err(_) => abort!("File {} does not exist!", file_name.display()),
         };
         Self {
+            name: file_name,
             content: content.chars().collect(),
             content_str: content,
             cursor: RefCell::new(0),
@@ -67,5 +75,10 @@ impl CursoredFile {
 impl AsRef<str> for CursoredFile {
     fn as_ref(&self) -> &str {
         &self.content_str
+    }
+}
+impl AsRef<[char]> for CursoredFile {
+    fn as_ref(&self) -> &[char] {
+        &self.content
     }
 }
