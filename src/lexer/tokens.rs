@@ -1,10 +1,11 @@
 #[derive(Debug, PartialEq)]
 pub struct Token {
-    pub kind: TokenKind,
-    pub len: usize
+    pub(crate) kind: TokenKind,
+    pub(crate) len: usize,
+    pub(crate) start: usize,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum TokenKind {
     Operator(OperatorKind),
     Keyword(KeywordKind),
@@ -14,7 +15,7 @@ pub enum TokenKind {
     EOF
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum OperatorKind {
     LParen,   // (
     RParen,   // )
@@ -26,7 +27,7 @@ pub enum OperatorKind {
     Coma,     // ,
     Binary(BinaryOperatorKind)
 }
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum BinaryOperatorKind {
     Assigment,      // =
     Addition,       // +
@@ -35,7 +36,7 @@ pub enum BinaryOperatorKind {
     Division,       // /
     Comparision(ComparisionOpKind)
 }
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ComparisionOpKind {
     Equals,         // ==
     NeEq,           // !=
@@ -43,6 +44,37 @@ pub enum ComparisionOpKind {
     BiggerOrEq,     // >=
     Less,           // <
     LessOrEq        // <=
+}
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum KeywordKind {
+    If,
+    Let,
+    While,
+    Fn,
+    Extern,
+    Ret
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum LiteralKind {
+    Num(f64),
+    Str(String)
+}
+impl Token {
+    pub fn eof() -> Self {
+        Self {
+            kind: TokenKind::EOF,
+            len: 0,
+            start: 0, // doesn't matter
+        }
+    }
+    pub fn undefined(c: char, start: usize) -> Self {
+        Self {
+            kind: TokenKind::Undefined(c),
+            start,
+            len: 1
+        }
+    }
 }
 impl TryFrom<&str> for KeywordKind {
     type Error = ();
@@ -82,36 +114,6 @@ impl TryFrom<&str> for OperatorKind {
             "[" => Ok(Self::LBracket),
             "]" => Ok(Self::RBracket),
             _ => Err(())
-        }
-    }
-}
-
-#[derive(Debug, PartialEq)]
-pub enum KeywordKind {
-    If,
-    Let,
-    While,
-    Fn,
-    Extern,
-    Ret
-}
-
-#[derive(Debug, PartialEq)]
-pub enum LiteralKind {
-    Num(f64),
-    Str(String)
-}
-impl Token {
-    pub fn eof() -> Self {
-        Self {
-            kind: TokenKind::EOF,
-            len: 0
-        }
-    }
-    pub fn undefined(c: char) -> Self {
-        Self {
-            kind: TokenKind::Undefined(c),
-            len: 1
         }
     }
 }
