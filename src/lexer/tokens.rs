@@ -1,7 +1,8 @@
 #[derive(Debug, PartialEq)]
 pub struct Token {
-    pub kind: TokenKind,
-    pub len: usize
+    pub(crate) kind: TokenKind,
+    pub(crate) len: usize,
+    pub(crate) start: usize,
 }
 
 #[derive(Debug, PartialEq)]
@@ -105,12 +106,14 @@ impl Token {
     pub fn eof() -> Self {
         Self {
             kind: TokenKind::EOF,
-            len: 0
+            len: 0,
+            start: 0, // doesn't matter
         }
     }
-    pub fn undefined(c: char) -> Self {
+    pub fn undefined(c: char, start: usize) -> Self {
         Self {
             kind: TokenKind::Undefined(c),
+            start,
             len: 1
         }
     }

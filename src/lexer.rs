@@ -22,16 +22,18 @@ pub fn next_token(input: &mut CursoredFile) -> Token {
         match regex.find_at(content, curs) {
             Some(m) if m.start() == curs => {
                 let len = m.len();
+                let start = input.get_cursor();
                 input.move_cursor(len);
                 let kind = closure(m.as_str());
-                return Token { kind, len };
+                return Token { kind, len, start };
             }
             _ => (),
         }
     }
     let c = input.current_char();
+    let start = input.get_cursor();
     input.move_cursor(1);
-    Token::undefined(c)
+    Token::undefined(c, start)
 }
 
 fn get_specification() -> &'static Vec<(Regex, Box<Handler>)> {
