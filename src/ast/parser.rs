@@ -91,7 +91,7 @@ fn parse_block(input: &mut CursoredFile) -> Vec<Ast> {
             }
             TokenKind::Keyword(KeywordKind::Ret) => body.push(Ast::RetNode(Box::new(parse_expression(input)))),
             TokenKind::Operator(OperatorKind::RCurly) => break,
-            _ => abort_syntax_analysis!(t, input, "unexpected token"),
+            _ => abort_syntax_analysis!(t, input, "expected `}` or an expression"),
         }
     }
     body
@@ -102,7 +102,7 @@ fn parse_expression(input: &mut CursoredFile) -> Ast {
     if let TokenKind::Operator(op) = &token.kind {
         match op {
             OperatorKind::Binary(BinaryOperatorKind::Assigment) if matches!(ast, Ast::ValueNode(_)) => {
-                abort_syntax_analysis!(token, input, format!("cannot assign to the const-value of {ast:?}"))
+                abort_syntax_analysis!(token, input, format!("function parametres are immutable"))
             }
             OperatorKind::Binary(op) => Ast::BinaryNode {
                 left: Box::new(ast),
