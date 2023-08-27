@@ -14,7 +14,7 @@ static SPEC: OnceLock<Vec<(Regex, Box<Handler>)>> = OnceLock::new();
 pub fn next_token(input: &mut CursoredFile) -> Token {
     input.skip_spaces();
     if input.out_of_bounds() {
-        return Token::eof();
+        return Token::eof(input.content.len() - 1);
     }
     let content = input.as_ref();
     let curs = input.get_cursor();

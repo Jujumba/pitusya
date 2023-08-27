@@ -61,11 +61,11 @@ pub enum LiteralKind {
     Str(String)
 }
 impl Token {
-    pub fn eof() -> Self {
+    pub fn eof(start: usize) -> Self {
         Self {
             kind: TokenKind::EOF,
             len: 0,
-            start: 0, // doesn't matter
+            start,
         }
     }
     pub fn undefined(c: char, start: usize) -> Self {
