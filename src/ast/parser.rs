@@ -7,7 +7,7 @@ use crate::lexer::tokens::{BinaryOperatorKind, KeywordKind, OperatorKind, TokenK
 
 macro_rules! abort_syntax_analysis {
     ($token:expr, $input:expr, $help:expr) => {
-        $crate::abort!("{}", error::construct_error_message(&$token, &$input, $help))
+        $crate::abort!("{}", $crate::ast::parser::error::construct_error_message(&$token, &$input, $help))
     };
 }
 
