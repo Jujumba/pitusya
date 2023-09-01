@@ -2,11 +2,11 @@ use std::process::ExitCode;
 
 use clap::Parser;
 
-use pitusya::ast::parser::parse;
+use pitusya::ast::parser;
 use pitusya::ast::Ast;
 use pitusya::codegen::Cg;
 use pitusya::input::{CursoredFile, Cli};
-use pitusya::pass::PitusyaPassManager;
+use pitusya::pass;
 use pitusya::abort;
 
 fn main() -> ExitCode {
@@ -20,10 +20,9 @@ fn main() -> ExitCode {
     let mut input = CursoredFile::new(cli);
 
     let mut cg = Cg::default();
-    let pm = PitusyaPassManager;
 
-    let asts: Vec<Ast> = parse(&mut input);
-    pm.pipeline(&asts);
+    let asts: Vec<Ast> = parser::parse(&mut input);
+    pass::pipeline(&asts);
     asts.into_iter().for_each(|ast| cg.codegen(ast));
 
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
