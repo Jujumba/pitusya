@@ -1,0 +1,12 @@
+extern print(n)
+fn slow_inverse_square_root(x,) {
+    ret 1 / x * x
+}
+fn loops_are_working() {
+    while 1 {
+        print(1)
+    }
+    ret 0
+}
+fn main() {
+    ret loops_are_working()
