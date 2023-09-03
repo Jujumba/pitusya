@@ -1,15 +1,10 @@
 use super::Proto;
 
 use crate::ast::Ast;
+use crate::abort_with_message;
 use crate::input::CursoredFile;
 use crate::lexer::next_token;
 use crate::lexer::tokens::{BinaryOperatorKind, KeywordKind, OperatorKind, TokenKind};
-
-macro_rules! abort_syntax_analysis {
-    ($token:expr, $input:expr, $help:expr) => {
-        $crate::abort!("{}", $crate::ast::parser::error::construct_error_message(&$token, &$input, $help))
-    };
-}
 
 pub fn parse(input: &mut CursoredFile) -> Vec<Ast> {
     let mut ast = Vec::new();
@@ -24,7 +19,7 @@ pub fn parse(input: &mut CursoredFile) -> Vec<Ast> {
                 ast.push(Ast::ExternNode(parse_prototype(input, true)));
             }
             TokenKind::EOF => break,
-            _ => abort_syntax_analysis!(token, input, "expected `extern` or `fn`"),
+            _ => abort_with_message!(token, input, "expected `extern` or `fn`"),
         }
     }
     ast
@@ -33,13 +28,13 @@ fn parse_prototype(input: &mut CursoredFile, definition: bool) -> Proto {
     let name_token = next_token(input);
     let name = match name_token.kind {
         TokenKind::Identifier(name) => name,
-        _ => abort_syntax_analysis!(name_token, input, "expected function's name in it's definition"),
+        _ => abort_with_message!(name_token, input, "expected function's name in it's definition"),
     };
 
     let paren_token = next_token(input);
     match paren_token.kind {
         TokenKind::Operator(OperatorKind::LParen) => (),
-        _ => abort_syntax_analysis!(paren_token, input, "expected `(`"),
+        _ => abort_with_message!(paren_token, input, "expected `(`"),
     }
 
     let mut args = Vec::<Ast>::new();
@@ -47,13 +42,13 @@ fn parse_prototype(input: &mut CursoredFile, definition: bool) -> Proto {
 
     while t.kind != TokenKind::Operator(OperatorKind::RParen) {
         match t.kind {
-            TokenKind::Identifier(_) if name == "main" => abort_syntax_analysis!(t, input, "main function accepts no parameters"),
+            TokenKind::Identifier(_) if name == "main" => abort_with_message!(t, input, "main function accepts no parameters"),
             TokenKind::Identifier(param) if definition => args.push(Ast::IdentifierNode(param)),
             _ if !definition => {
                 input.move_back_cursor(t.len);
                 args.push(parse_expression(input));
             }
-            _ => abort_syntax_analysis!(t, input, "expected an identifier"),
+            _ => abort_with_message!(t, input, "expected an identifier"),
         }
         let next = next_token(input);
         match next.kind {
@@ -62,7 +57,7 @@ fn parse_prototype(input: &mut CursoredFile, definition: bool) -> Proto {
                 continue;
             }
             TokenKind::Operator(OperatorKind::RParen) => break,
-            _ => abort_syntax_analysis!(next, input, "expected `,` or `)`"),
+            _ => abort_with_message!(next, input, "expected `,` or `)`"),
         }
     }
     let semicol = next_token(input);
@@ -75,7 +70,7 @@ fn parse_prototype(input: &mut CursoredFile, definition: bool) -> Proto {
 fn parse_block(input: &mut CursoredFile) -> Vec<Ast> {
     let curly = next_token(input);
     if curly.kind != TokenKind::Operator(OperatorKind::LCurly) {
-        abort_syntax_analysis!(curly, input, "`{`");
+        abort_with_message!(curly, input, "`{`");
     }
     let mut body = vec![];
     loop {
@@ -96,7 +91,7 @@ fn parse_block(input: &mut CursoredFile) -> Vec<Ast> {
             }
             TokenKind::Keyword(KeywordKind::Ret) => body.push(Ast::RetNode(Box::new(parse_expression(input)))),
             TokenKind::Operator(OperatorKind::RCurly) => break,
-            _ => abort_syntax_analysis!(t, input, "expected `}` or an expression"),
+            _ => abort_with_message!(t, input, "expected `}` or an expression"),
         }
     }
     body
@@ -107,7 +102,7 @@ fn parse_expression(input: &mut CursoredFile) -> Ast {
     if let TokenKind::Operator(op) = &token.kind {
         match op {
             OperatorKind::Binary(BinaryOperatorKind::Assigment) if matches!(ast, Ast::ValueNode(_)) => {
-                abort_syntax_analysis!(token, input, format!("function parameters are immutable"))
+                abort_with_message!(token, input, format!("function parameters are immutable"))
             }
             OperatorKind::Binary(op) => Ast::BinaryNode {
                 left: Box::new(ast),
@@ -136,9 +131,9 @@ fn parse_unit_expr(input: &mut CursoredFile) -> Ast {
                 op,
             },
             OperatorKind::RParen => ast,
-            _ => abort_syntax_analysis!(token, input, "expected a binary operator or `)`"),
+            _ => abort_with_message!(token, input, "expected a binary operator or `)`"),
         },
-        _ => abort_syntax_analysis!(token, input, "expected `)`"),
+        _ => abort_with_message!(token, input, "expected `)`"),
     }
 }
 fn fetch_lhs(input: &mut CursoredFile) -> Ast {
@@ -150,14 +145,14 @@ fn fetch_lhs(input: &mut CursoredFile) -> Ast {
         }
         TokenKind::Literal(l) => Ast::ValueNode(l),
         TokenKind::Operator(OperatorKind::LParen) => Ast::UnitNode(Box::new(parse_unit_expr(input))),
-        _ => abort_syntax_analysis!(lhs_token, input, "expected an identifier or literal"),
+        _ => abort_with_message!(lhs_token, input, "expected an identifier or literal"),
     }
 }
 fn fetch_ident_or_call(input: &mut CursoredFile) -> Ast {
     let name_token = next_token(input);
     let name = match name_token.kind {
         TokenKind::Identifier(i) => i,
-        _ => abort_syntax_analysis!(name_token, input, "expected an identifier"),
+        _ => abort_with_message!(name_token, input, "expected an identifier"),
     };
     let paren = next_token(input);
     input.move_back_cursor(paren.len);
@@ -177,53 +172,9 @@ fn parse_let_expr(input: &mut CursoredFile) -> Ast {
                     assignee,
                     value: Box::new(parse_expression(input)),
                 },
-                _ => abort_syntax_analysis!(token, input, "expected `=`"),
+                _ => abort_with_message!(token, input, "expected `=`"),
             }
         }
-        _ => abort_syntax_analysis!(token, input, "expected an identifier"),
-    }
-}
-
-mod error {
-    use crate::{input::CursoredFile, lexer::tokens::Token};
-    use colored::Colorize;
-
-    pub fn construct_error_message<A: AsRef<str>>(token: &Token, file: &CursoredFile, help: A) -> String {
-        let help = help.as_ref();
-        let chars: &[char] = file.as_ref();
-        let start = token.start
-            - chars[..token.start]
-                .iter()
-                .rev()
-                .position(|c| *c == '\n')
-                .unwrap_or(token.start);
-        let end = token.start + chars[token.start..].iter().position(|c| *c == '\n').unwrap_or(file.content.len());
-        let line: String = chars[start..end].iter().collect();
-        let line_number = chars[..token.start].iter().filter(|c| **c == '\n').count();
-        let span_start = token.start - start;
-        let span_len = token.len;
-
-        if span_start == 0 {
-            format!(
-                "{error} in {file_name} on line {line_number}:\n\t{line}\n\t{sep:^>span_len$}\n{col_help}: {actual_help}",
-                file_name = file.name.display().to_string().bright_cyan().bold(), // I'm sorry
-                line_number = line_number,
-                error = "error".bright_red(),
-                sep = "^".bright_red(),
-                col_help = "note".bright_cyan(),
-                actual_help = help
-            )
-        } else {
-            format!(
-                "{error} in {file_name} on line {line_number}:\n\t{line}\n\t{space:>span_start$}{sep:^>span_len$}\n{col_help}: {actual_help}",
-                file_name = file.name.display().to_string().bright_cyan().bold(),
-                line_number = line_number,
-                error = "error".bright_red(),
-                space = ' ',
-                sep = "^".bright_red(),
-                col_help = "note".bright_cyan(),
-                actual_help = help
-            )
-        }
+        _ => abort_with_message!(token, input, "expected an identifier"),
     }
 }

@@ -4,6 +4,10 @@ pub mod input;
 pub mod lexer;
 pub mod pass;
 
+use input::CursoredFile;
+use lexer::tokens::Token;
+use colored::Colorize;
+
 pub const EXIT_CODE: i128 = 0x_48_41_50_50_59_42_44_41_59_i128;
 
 #[macro_export]
@@ -33,7 +37,49 @@ macro_rules! abort_if_not {
         }
     };
 }
-
+#[macro_export]
+macro_rules! abort_with_message {
+    ($token:expr, $input:expr, $help:expr) => {
+        $crate::abort!("{}", $crate::construct_error_message(&$token, &$input, $help))
+    };
+}
+pub fn construct_error_message<A: AsRef<str>>(token: &Token, file: &CursoredFile, help: A) -> String {
+    let help = help.as_ref();
+    let chars: &[char] = file.as_ref();
+    let start = token.start
+        - chars[..token.start]
+            .iter()
+            .rev()
+            .position(|c| *c == '\n')
+            .unwrap_or(token.start);
+    let end = token.start + chars[token.start..].iter().position(|c| *c == '\n').unwrap_or(file.content.len());
+    let line: String = chars[start..end].iter().collect();
+    let line_number = chars[..token.start].iter().filter(|c| **c == '\n').count();
+    let span_start = token.start - start;
+    let span_len = token.len;
+    if span_start == 0 {
+        format!(
+            "{error} in {file_name} on line {line_number}:\n\t{line}\n\t{sep:^>span_len$}\n{col_help}: {actual_help}",
+            file_name = file.name.display().to_string().bright_cyan().bold(), // I'm sorry
+            line_number = line_number,
+            error = "error".bright_red(),
+            sep = "^".bright_red(),
+            col_help = "note".bright_cyan(),
+            actual_help = help
+        )
+    } else {
+        format!(
+            "{error} in {file_name} on line {line_number}:\n\t{line}\n\t{space:>span_start$}{sep:^>span_len$}\n{col_help}: {actual_help}",
+            file_name = file.name.display().to_string().bright_cyan().bold(),
+            line_number = line_number,
+            error = "error".bright_red(),
+            space = ' ',
+            sep = "^".bright_red(),
+            col_help = "note".bright_cyan(),
+            actual_help = help
+        )
+    }
+}
 #[cfg(test)]
 mod tests {
     use crate::ast::{parser, Ast};
