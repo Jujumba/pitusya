@@ -47,7 +47,7 @@ fn parse_prototype(input: &mut CursoredFile, definition: bool) -> Proto {
 
     while t.kind != TokenKind::Operator(OperatorKind::RParen) {
         match t.kind {
-            TokenKind::Identifier(_) if name == "main" => abort_syntax_analysis!(t, input, "Main function cannot accept parameters!"),
+            TokenKind::Identifier(_) if name == "main" => abort_syntax_analysis!(t, input, "main function accepts no parameters"),
             TokenKind::Identifier(param) if definition => args.push(Ast::IdentifierNode(param)),
             _ if !definition => {
                 input.move_back_cursor(t.len);
@@ -64,6 +64,11 @@ fn parse_prototype(input: &mut CursoredFile, definition: bool) -> Proto {
             TokenKind::Operator(OperatorKind::RParen) => break,
             _ => abort_syntax_analysis!(next, input, "expected `,` or `)`"),
         }
+    }
+    let semicol = next_token(input);
+    match semicol.kind {
+        TokenKind::Operator(OperatorKind::Semicol) if definition => (),
+        _ => input.move_back_cursor(semicol.len),
     }
     Proto { name, args }
 }
@@ -102,7 +107,7 @@ fn parse_expression(input: &mut CursoredFile) -> Ast {
     if let TokenKind::Operator(op) = &token.kind {
         match op {
             OperatorKind::Binary(BinaryOperatorKind::Assigment) if matches!(ast, Ast::ValueNode(_)) => {
-                abort_syntax_analysis!(token, input, format!("function parametres are immutable"))
+                abort_syntax_analysis!(token, input, format!("function parameters are immutable"))
             }
             OperatorKind::Binary(op) => Ast::BinaryNode {
                 left: Box::new(ast),
