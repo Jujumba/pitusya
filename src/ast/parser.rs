@@ -109,6 +109,7 @@ fn parse_expression(input: &mut CursoredFile) -> Ast {
                 right: Box::new(parse_expression(input)),
                 op: *op,
             },
+            OperatorKind::Semicol => ast,
             _ => {
                 input.move_back_cursor(token.len);
                 ast
