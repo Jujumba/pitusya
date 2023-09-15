@@ -1,12 +1,13 @@
 extern print(n)
-fn slow_inverse_square_root(x,) {
-    ret 1 / x * x
-}
-fn loops_are_working() {
-    while 1 {
-        print(1)
+extern print_str(s)
+
+fn main() {
+    let a = 1
+    let c = "Hello"
+    print_str(c, 5)
+    while a <= 10 {
+        print(a)
+        a = a + 1
     }
     ret 0
 }
-fn main() {
-    ret loops_are_working()
