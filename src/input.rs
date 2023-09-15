@@ -64,11 +64,12 @@ impl CursoredFile {
         *self.cursor.borrow()
     }
     pub fn skip_spaces(&mut self) {
+        let mut cursor = self.cursor.borrow_mut();
         if self.out_of_bounds() {
             return;
         }
         while !self.out_of_bounds() && self.current_char().is_whitespace() {
-            self.move_cursor(1);
+            *cursor += 1;
         }
     }
 }
