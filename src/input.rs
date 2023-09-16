@@ -32,9 +32,8 @@ impl From<Cli> for PathBuf {
 impl CursoredFile {
     pub fn new<P: Into<PathBuf>>(file_name: P) -> Self {
         let file_name = file_name.into();
-        let content = match fs::read_to_string(&file_name) {
-            Ok(content) => content,
-            Err(_) => abort!("File {} does not exist!", file_name.display()),
+        let Ok(content) = fs::read_to_string(&file_name) else {
+            abort!("File {} does not exist!", file_name.display());
         };
         Self {
             name: file_name,
@@ -64,12 +63,16 @@ impl CursoredFile {
         *self.cursor.borrow()
     }
     pub fn skip_spaces(&mut self) {
-        let mut cursor = self.cursor.borrow_mut();
         if self.out_of_bounds() {
             return;
         }
-        while !self.out_of_bounds() && self.current_char().is_whitespace() {
-            *cursor += 1;
+        let mut cursor = self.cursor.borrow_mut();
+        while let Some(c) = self.content.get(*cursor) {
+            if c.is_whitespace() {
+                *cursor += 1;
+            } else {
+                break;
+            }
         }
     }
 }
