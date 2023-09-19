@@ -26,9 +26,8 @@ pub fn parse(input: &mut CursoredFile) -> Vec<Ast> {
 }
 fn parse_prototype(input: &mut CursoredFile, definition: bool) -> Proto {
     let name_token = next_token(input);
-    let name = match name_token.kind {
-        TokenKind::Identifier(name) => name,
-        _ => abort_with_message!(name_token, input, "expected function's name in it's definition"),
+    let TokenKind::Identifier(name) = name_token.kind else { 
+        abort_with_message!(name_token, input, "expected function's name in it's definition")
     };
 
     let paren_token = next_token(input);
@@ -70,7 +69,7 @@ fn parse_prototype(input: &mut CursoredFile, definition: bool) -> Proto {
 fn parse_block(input: &mut CursoredFile) -> Vec<Ast> {
     let curly = next_token(input);
     if curly.kind != TokenKind::Operator(OperatorKind::LCurly) {
-        abort_with_message!(curly, input, "`{`");
+        abort_with_message!(curly, input, "expected `{`");
     }
     let mut body = vec![];
     loop {
